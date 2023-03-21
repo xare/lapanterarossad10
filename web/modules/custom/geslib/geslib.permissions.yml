@@ -1,0 +1,4 @@
+administer geslib configuration:
+  title: 'Administer geslib configuration'
+  description: 'Optional description.'
+  restrict access: true

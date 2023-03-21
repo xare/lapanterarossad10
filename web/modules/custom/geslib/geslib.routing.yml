@@ -1,0 +1,25 @@
+geslib.list:
+  path: '/admin/geslib/list'
+  defaults:
+    _title: 'Geslib list'
+    _controller: '\Drupal\geslib\Controller\GeslibController::build'
+    _template: 'geslib-admin-page'
+  requirements:
+    _permission: 'access content'
+
+geslib.settings_form:
+  path: '/admin/config/system/geslib'
+  defaults:
+    _title: 'geslib settings'
+    _form: 'Drupal\geslib\Form\SettingsForm'
+  requirements:
+    _permission: 'administer geslib configuration'
+
+geslib.process_files:
+  path: '/admin/config/system/geslib_process_files'
+  defaults:
+    _title: 'Process files'
+    _form: 'Drupal\geslib\Form\GeslibFirstImportForm'
+    _description: 'geslib-firs-import'
+  requirements:
+    _permission: 'administer geslib configuration'

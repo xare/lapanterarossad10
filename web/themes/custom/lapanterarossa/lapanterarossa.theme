@@ -1,0 +1,53 @@
+<?php
+
+use Twig\TwigFunction;
+/**
+ * @file
+ * Functions to support theming.
+ */
+
+/**
+ * Implements hook_preprocess_image_widget().
+ */
+function lapanterarossa_preprocess_image_widget(array &$variables) {
+  $data = &$variables['data'];
+
+  // This prevents image widget templates from rendering preview container HTML
+  // to users that do not have permission to access these previews.
+  // @todo revisit in https://drupal.org/node/953034
+  // @todo revisit in https://drupal.org/node/3114318
+  if (isset($data['preview']['#access']) && $data['preview']['#access'] === FALSE) {
+    unset($data['preview']);
+  }
+}
+
+/**
+ * Implements hook_preprocess_input__input_number.
+ * @param array $variables
+ */
+function lapanterarossa_preprocess_input(&$variables) {
+
+  if ($variables['attributes']['type'] == 'submit')
+    $variables['attributes']['class'][] = 'button';
+  else
+    if ($variables['attributes']['type'] == 'text' ||
+        $variables['attributes']['type'] == 'number')
+      $variables['attributes']['class'][] = 'input';
+
+    // Add a custom label to the input element.
+    //$variables['children'] = t('Enter a number:');
+  //}
+}
+
+function lapanterarossa_preprocess_select(&$variables) {
+  $variables['attributes']['class'][] = 'select';
+}
+
+/**
+ * Implements hook_twig_function().
+ */
+function lapanterarossa_twig_function($name) {
+  if ($name == 't') {
+    return new Twig_Function('t', 't');
+  }
+}
