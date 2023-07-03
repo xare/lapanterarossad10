@@ -12,6 +12,8 @@ use Drupal\commerce_order\OrderItemStorageInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Render\RenderContext;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\jsonapi\Entity\EntityValidationTrait;
 use Drupal\jsonapi\Exception\EntityAccessDeniedHttpException;
 use Drupal\jsonapi\JsonApiResource\JsonApiDocumentTopLevel;
@@ -36,8 +38,10 @@ final class CartUpdateItemResource extends CartResourceBase {
    *   The cart manager.
    * @param \Drupal\commerce_api\EntityResourceShim $inner
    *   The JSON:API controller shim.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer.
    */
-  public function __construct(protected CartProviderInterface $cartProvider, protected CartManagerInterface $cartManager, protected EntityResourceShim $inner) {
+  public function __construct(protected CartProviderInterface $cartProvider, protected CartManagerInterface $cartManager, protected EntityResourceShim $inner, private RendererInterface $renderer) {
     parent::__construct($cartProvider, $cartManager);
   }
 
@@ -49,6 +53,7 @@ final class CartUpdateItemResource extends CartResourceBase {
       $container->get('commerce_cart.cart_provider'),
       $container->get('commerce_cart.cart_manager'),
       $container->get('commerce_api.jsonapi_controller_shim'),
+      $container->get('renderer')
     );
   }
 
@@ -95,7 +100,7 @@ final class CartUpdateItemResource extends CartResourceBase {
 
       $parsed_field_item = $parsed_entity->get($field_name);
       $original_field_item = $commerce_order_item->get($field_name);
-      if ($this->inner->checkPatchFieldAccess($original_field_item, $parsed_field_item)) {
+      if ($this->inner->checkPatchFieldAccess($parsed_field_item, $original_field_item)) {
         $commerce_order_item->set($field_name, $parsed_field_item->getValue());
       }
       $field_names[] = $field_name;
@@ -103,15 +108,19 @@ final class CartUpdateItemResource extends CartResourceBase {
 
     static::validate($commerce_order_item, $field_names);
 
-    try {
-      $this->cartManager->updateOrderItem($commerce_order, $commerce_order_item);
-    }
-    catch (EntityStorageException $exception) {
-      if ($exception->getPrevious() instanceof OrderVersionMismatchException) {
-        throw new ConflictHttpException($exception->getMessage(), $exception);
+    $render_context = new RenderContext();
+    $this->renderer->executeInRenderContext($render_context, function () use ($commerce_order, $commerce_order_item) {
+      try {
+        $this->cartManager->updateOrderItem($commerce_order, $commerce_order_item);
       }
-      throw $exception;
-    }
+      catch (EntityStorageException $exception) {
+        if ($exception->getPrevious() instanceof OrderVersionMismatchException) {
+          throw new ConflictHttpException($exception->getMessage(), $exception);
+        }
+        throw $exception;
+      }
+    });
+
     $order_item_storage = $this->entityTypeManager->getStorage('commerce_order_item');
     assert($order_item_storage instanceof OrderItemStorageInterface);
     // Reload the order item as the cart has refreshed.
@@ -119,7 +128,13 @@ final class CartUpdateItemResource extends CartResourceBase {
 
     $resource_object = ResourceObject::createFromEntity($this->resourceTypeRepository->get($commerce_order_item->getEntityTypeId(), $commerce_order_item->bundle()), $commerce_order_item);
     $primary_data = new ResourceObjectData([$resource_object], 1);
-    return $this->createJsonapiResponse($primary_data, $request);
+    $response = $this->createJsonapiResponse($primary_data, $request);
+
+    if (!$render_context->isEmpty()) {
+      $response->addCacheableDependency($render_context->pop());
+    }
+
+    return $response;
   }
 
 }

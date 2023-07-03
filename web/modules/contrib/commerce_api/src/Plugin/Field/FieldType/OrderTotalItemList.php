@@ -3,7 +3,7 @@
 namespace Drupal\commerce_api\Plugin\Field\FieldType;
 
 use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\commerce_order\OrderTotalSummary;
+use Drupal\commerce_order\OrderTotalSummaryInterface;
 use Drupal\commerce_price\Price;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\TypedData\ComputedItemListTrait;
@@ -19,7 +19,7 @@ final class OrderTotalItemList extends FieldItemList {
     $order = $this->getEntity();
     assert($order instanceof OrderInterface);
     $summary = \Drupal::getContainer()->get('commerce_order.order_total_summary');
-    assert($summary instanceof OrderTotalSummary);
+    assert($summary instanceof OrderTotalSummaryInterface);
     $totals = $summary->buildTotals($order);
 
     $values = [

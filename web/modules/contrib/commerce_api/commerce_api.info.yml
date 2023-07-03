@@ -11,7 +11,7 @@ dependencies:
   - jsonapi_resources:jsonapi_resources
   - jsonapi_hypermedia:jsonapi_hypermedia
 
-# Information added by Drupal.org packaging script on 2023-02-23
-version: '8.x-1.0-rc1'
+# Information added by Drupal.org packaging script on 2023-04-11
+version: '8.x-1.0-rc2'
 project: 'commerce_api'
-datestamp: 1677156261
+datestamp: 1681197344

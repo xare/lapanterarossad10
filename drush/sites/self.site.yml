@@ -1,0 +1,4 @@
+self:
+  root: /var/www/html/lapanterarossa/web
+  uri: http://lapanterarossa
+

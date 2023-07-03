@@ -59,11 +59,11 @@ final class WebhookController implements ContainerInjectionInterface {
       }
       $commerce_order->getState()->applyTransitionById($transition);
       $commerce_order->save();
-      return JsonResponse::create(['message' => 'OK']);
+      return new JsonResponse(['message' => 'OK']);
     }
     catch (\Exception $e) {
       watchdog_exception('commerce_api', $e);
-      return JsonResponse::create(['message' => 'Bad request'], 400);
+      return new JsonResponse(['message' => 'Bad request'], 400);
     }
   }
 

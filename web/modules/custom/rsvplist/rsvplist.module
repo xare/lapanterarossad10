@@ -1,0 +1,77 @@
+<?php 
+
+/**
+ * @file
+ * RSVPList module hooks.
+ */
+
+ use Drupal\Core\Form\FormStateInterface;
+
+ /**
+  * Implements hook_form_BASE_FORM_ID_alter().
+  */
+ function rsvplist_form_node_form_alter(&$form, FormStateInterface $form_state){
+    /** @var \Drupal\Core\Entity\EntityFormInterface $form_object */
+    $form_object = $form_state->getFormObject();
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $form_object->getEntity();
+
+    $current_node_type = $node->getType();
+    $rsvp_config = \Drupal::config( 'rsvplist.settings' );
+    $allowed_types = $rsvp_config->get( 'allowed_types' );
+
+    if ( in_array( $current_node_type, $allowed_types ) ) {
+        $form['rsvplist'] = [
+            '#type' => 'details',
+            '#title' => t('RSVP Collection'),
+            '#access' => \Drupal::currentUser()->hasPermission('administer rsvplist'),
+            '#group' => 'advanced',
+            '#weight' => 50,
+        ];
+        $enabler = \Drupal::service('rsvplist.enabler');
+        $form['rsvplist']['rsvp_enabled'] = [
+            '#type' => 'checkbox',
+            '#title' => t('Collect RSVP email addresses for this node.'),
+            '#default_value' => $enabler->isEnabled($node),
+        ];
+        foreach ( array_keys( $form['actions']) as $action ) {
+            if( $action != 'preview' && 
+                isset($form['actions'][$action]['#type']) && 
+                $form['actions'][$action]['#type'] === 'submit') {
+                    \Drupal::messenger()->addMessage(
+                        t('The form has been submitted and will now be processed.')
+                    );
+                $form['actions'][$action]['#submit'][] = 'rsvplist_form_node_form_submit';
+            }
+        }
+    }
+ }
+
+ /**
+ * Form submission handler for RSVP item field on the node form. 
+ * @see rsvplist_form_node_form_alter()
+ * 
+ * @param array $form
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ */
+function rsvplist_form_node_form_submit($form, FormStateInterface $form_state) {
+    $enabler = \Drupal::service('rsvplist.enabler');
+    /** @var \Drupal\Core\Entity\EntityFormInterface $form_object */
+    $form_object = $form_state->getFormObject();
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $form_object->getEntity();
+    /* \Drupal::messenger()->addMessage(
+        t('rsvp_enabled: @enabled',['@enabled'])
+    ); */
+    if( $form_state->getValue('rsvp_enabled')) {
+        \Drupal::messenger()->addMessage(
+            t('The form has been enabled.')
+        );
+        $enabler->setEnabled($node);
+    } else {
+        \Drupal::messenger()->addMessage(
+            t('The form has been disabled.')
+        );
+        $enabler->deleteEnabled($node);
+    }
+}

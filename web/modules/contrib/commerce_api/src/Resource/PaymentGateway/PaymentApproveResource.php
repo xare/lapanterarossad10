@@ -83,8 +83,12 @@ final class PaymentApproveResource extends EntityResourceBase implements Contain
    *   The order.
    */
   private function doProcess(Request $request, OrderInterface $order) {
+    // @todo should this actually be a "not allowed" exception?
+    //   instead be kind and just return the order object to be reentrant.
     if (!$order->getState()->isTransitionAllowed('place')) {
-      throw new UnprocessableEntityHttpException('The "place" transition is not allowed.');
+      $this->fixOrderInclude($request);
+      $top_level_data = $this->createIndividualDataFromEntity($order);
+      return $this->createJsonapiResponse($top_level_data, $request);
     }
 
     if ($order->get('payment_gateway')->isEmpty()) {
