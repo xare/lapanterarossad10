@@ -1,0 +1,130 @@
+/* DEVELOPPEMENT MODE STYLES
+Show border to all elements in page
+*/
+
+
+/* *:not( .toolbar-tab, .toolbar-tab *, .messages, .messages *, .contextual, .contextual *) {
+    border: 1px solid rgba(10, 10, 10, 0.3);
+}
+
+#block-lapanterarossa-local-tasks {
+    border: 1px solid red;
+} */
+
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0");
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600;700;800;900&display=swap');
+h1,
+h2,
+h3 {
+    font-family: "Roboto Slab", serif;
+}
+
+h1 {
+    font-size: 3rem !important;
+}
+
+h3 {
+    font-size: 1.8rem !important;
+}
+
+a {
+    color: #FA0678;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+ul {
+    margin-bottom: 0.6rem;
+}
+
+header {
+    background: #333 !important;
+}
+
+.site-logo img {
+    width: 14rem;
+    height: auto;
+    max-height: 3.25rem;
+}
+
+.region-top-start {
+    width: 10em;
+    border: 1px solid red;
+    align-content: center;
+}
+
+.breadcrumb {
+    padding-block-start: 0.5rem;
+}
+
+.layout-sidebar-second {
+    background: #333;
+    color: white;
+    width: 32% !important;
+}
+
+.layout-sidebar-second a {
+    color: #dedede;
+    ;
+}
+
+.layout-sidebar-second a:hover {
+    color: #aaa;
+}
+
+
+/* CUSTOM FIELDS */
+
+h1.page-title {
+    font-size: 3rem;
+}
+
+.views-view-grid .field--name-title {
+    font-size: 2rem;
+}
+
+
+/* COMMERCE CHECKOUT STEPS */
+
+.checkout-progress--step::before {
+    content: "" !important;
+}
+
+fieldset[data-drupal-selector="edit-payment-information"] {
+    margin-top: 0 !important;
+}
+
+td.views-field:not(td.views-field-edit-quantity,
+td.views-field-remove-button) {
+    padding-top: 1rem !important;
+}
+
+table.views-view-table {
+    width: 100%;
+}
+
+.summary-wrapper {
+    margin-bottom: 1rem;
+}
+
+.checkout-order-summary h3 {
+    font-size: 1.2rem;
+}
+
+#block-contenidoprincipaldelapagina {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.checkout-progress {
+    margin-top: 2rem;
+}
+
+[data-drupal-messages] {
+    margin-top: 2rem;
+}
+
+footer {
+    background-color: #333;
+}

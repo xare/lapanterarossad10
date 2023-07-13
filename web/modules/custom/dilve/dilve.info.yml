@@ -1,0 +1,8 @@
+name: dilve
+type: module
+description: Provides a way to read and import files from dilve
+package: Custom
+core_version_requirement: ^9 || ^10
+dependencies:
+  - custom:geslib
+  - commerce:commerce

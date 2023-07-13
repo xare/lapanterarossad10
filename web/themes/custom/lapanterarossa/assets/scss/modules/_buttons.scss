@@ -1,0 +1,139 @@
+.button{
+    height: 40px;
+    padding: 0 1rem;
+    border-radius: 100px;
+    border-color: $black;
+    background-color: transparent;
+    min-width: 7vw;
+    &:hover, &:active{
+        color: $primary;
+        border-color: $primary;
+    }
+    &.is-white{
+        color: $primary;
+    }
+    &.is-gray{
+        background-color: $gray-light;
+        border-color: $gray-light;
+    }
+    &.is-error{
+        color: red;
+        border-color: transparent;
+        background-color: transparent;
+        cursor: auto;
+    }
+    &.is-more{
+        border-color: transparent;
+        background-color: transparent;
+        color: $primary;
+        padding-left: 0;
+        padding-right: 0;
+        &::before{
+            content: "\e7cd";
+            color: $primary;
+            font-family: 'Material Symbols Outlined';
+            display: inline-flex;
+            align-items: center;
+            font-size: 18px;
+            width: 20px;
+            margin-right: .2rem;
+        }
+    }
+    &.is-back{
+        border-color: transparent;
+        background-color: transparent;
+        color: $primary;
+        padding-left: 0;
+        padding-right: 0;
+        &::before{
+            content: "\eaa7";
+            color: $primary;
+            font-family: 'Material Symbols Outlined';
+            display: inline-flex;
+            align-items: center;
+            font-size:24px;
+            width: 26px;
+            margin-right: .2rem;
+        }
+    }
+    &.is-transparent{
+        background-color: transparent;
+        border-color: transparent;
+    }
+}
+
+
+//Buttons with icons
+.button.has-icon{
+    &::before{
+        font-family: 'Material Symbols Outlined';
+        display: inline-flex;
+        align-items: center;
+        font-size: 18px;
+        width: 20px;
+        margin-right: .2rem;
+    }
+    &.is-location{
+        &::before{
+            content: "\f14d";
+            color: $primary;
+        }
+    }
+    &.is-tel{
+        &::before{
+            content: "\e0b0";
+            color: $primary;
+        }
+    }
+    &.is-mail{
+        &::before{
+            content: "\e158";
+            color: $primary;
+        }
+    }
+    &:hover{
+        &::before{
+            color: $black;
+        }
+    }
+}
+
+
+// Tags
+.chips{
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    .chip{
+        border-radius: 3px;
+        padding: .2rem .5rem;
+        color: $primary;
+        border: 1px solid $primary;
+        font-size: $tiny;
+        @include desktop{
+            font-size: $small;
+        }
+        &:hover, &:active{
+            color: $black;
+            border-color: $black;
+        }
+    }
+}
+
+
+//Dropdowns
+
+.dropdown{
+    .dropdown-content{
+        padding: .5rem;
+    }
+    a.dropdown-item{
+        color: $black;
+        border-radius: 100px;
+        padding-top: .75rem;
+        padding-bottom: .75rem;
+        &:hover, &:active, .is-active{
+            background-color: $primary-light;
+        }
+    }
+}

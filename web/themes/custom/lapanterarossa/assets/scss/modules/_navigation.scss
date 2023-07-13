@@ -1,0 +1,164 @@
+
+
+//Navbar top
+.navbar-top{
+    background-color: $primary-bg;
+    font-size: $small;
+    .navbar-item{
+        color: $black;
+    }
+    .buttons-top{
+        justify-content: space-between;
+        @include tablet{
+            justify-content: flex-start;
+        }
+        @media only screen and (max-width: 500px) {
+            span{
+                display: none;
+            }
+          }
+        .button{
+            font-size: $small;
+            padding: 0;
+            background: transparent;
+            border: transparent;
+            color: $primary;
+            &:hover{
+                color: $black;
+            }
+            @include tablet{
+                margin-left: 1rem;
+            }
+        }
+    }
+}
+
+
+// Navbar main
+.navbar-main{
+    font-size: $regular;
+    padding: 1rem 0;
+    border-bottom: 1px solid $gray-line;
+    .navbar-brand{
+        @include desktop{
+            padding-top: 0;
+            padding-bottom: 0;
+            min-height: 5rem;
+        }
+    }
+    .navbar-item, .navbar-link, a.navbar-item, a.navbar-link, .navbar-item.has-dropdown:hover .navbar-link{
+        color: $black;
+        &:hover, &.is-active, &:active, &:focus, &:focus-within{
+        color:$primary;
+        background-color:transparent;
+        }
+    }
+    .logo{
+       @include desktop{
+        max-height: 2.5rem;
+       }
+    }
+    .logo-icon{
+        width: 50px;
+        height: 50px;
+    }
+    .logo-regular{
+        display: none;
+        @media only screen and (min-width: 350px) {
+            display: flex;
+          }
+    }
+    .logo-tiny{
+        display: none;
+        @media only screen and (max-width: 350px) {
+            display: flex;
+          }
+    }
+    .is-cart{
+        display: flex;
+        align-items: center;
+        .cart-items{
+            background-color: $primary;
+            align-items: center;
+            padding: .12rem .5rem;
+            color: $white;
+            text-align: center;
+            font-size: $small;
+            border-radius: 100px;
+            display: none;
+            @include tablet{
+                display: inline-flex;
+            }
+        }
+    }
+    .navbar-menu{
+        box-shadow: none;
+        @include mobile{
+            .navbar-item{
+                &:active, &:hover{
+                    border-radius: 100px;
+                    background-color: $primary-bg;
+                }
+            }
+        }
+    }
+}
+
+// Show only on tablet and mobile
+.navbar-touch{
+    display: flex;
+    align-items: center;
+    position: absolute;
+    right: 4rem;
+    top: 0.2rem;
+}
+
+// Navbar dropdowns
+
+.navbar-dropdown{
+    border-top: none;
+    border-radius: 12px;
+    @include box-shadow;
+    border: 1px solid $gray-bg;
+    &.is-right{
+        left: auto;
+        right: 0;
+    }
+}
+
+
+//Tabs
+.tabs ul{
+    border-bottom: none;
+    li{
+        a{
+            border-bottom: 2px solid transparent;
+            color: $gray;
+            &:hover, &:active{
+                border-color: $primary;
+                color: $black;
+            }
+        }
+        &.is-active{
+            border-color: $primary;
+            a{
+                color: $black;
+                font-weight: 500;
+            }
+        }
+    }
+}
+
+//Breadcrumbs
+.breadcrumb.is-cart-steps{
+    li{
+        &.is-active{
+            a{
+                color: $dark;
+            }
+        }
+        a{
+            color: $gray-light;
+        }
+    }
+}

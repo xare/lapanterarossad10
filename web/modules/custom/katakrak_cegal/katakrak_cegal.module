@@ -1,0 +1,214 @@
+<?php
+
+use Drupal\Core\Batch\BatchBuilder;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_menu().
+ */
+function katakrak_cegal_menu() {
+  $items['admin/commerce/config/cegal'] = [
+    'title' => 'Cegal',
+    'description' => 'Cegal',
+    'route_name' => 'katakrak_cegal_batch_process_form',
+    'access' => 'administer site',
+  ];
+
+  $items['admin/commerce/config/cegal/process'] = [
+    'title' => 'Procesar portadas',
+    'description' => 'Dilve',
+    'parent' => 'admin/commerce/config/cegal',
+    'type' => 'default',
+  ];
+
+  $items['admin/commerce/config/cegal/settings'] = [
+    'title' => 'Opciones',
+    'description' => 'Configuración de módulo cegal',
+    'route_name' => 'katakrak_cegal_settings_form',
+    'access' => 'administer site',
+    'type' => 'default',
+  ];
+
+  $items['node/{node}/cegal'] = [
+    'title' => 'Cegal',
+    'route_name' => 'katakrak_cegal_portada_form',
+    'route_parameters' => ['node' => 1],
+    'access_callback' => 'katakrak_dilve_access_node_info',
+    'access_arguments' => ['access dilve information', 1],
+    'type' => 'default',
+    'weight' => 100,
+  ];
+
+  return $items;
+}
+
+/**
+ * Builds the form for Cegal settings.
+ */
+
+
+  function katakrak_cegal_settings_form(array &$form, FormStateInterface $form_state) {
+    $form['cegal_user'] = [
+      '#type' => 'textfield',
+      '#title' => t('Usuario CEGAL'),
+      '#default_value' => variable_get('cegal_user', ''),
+    ];
+    $form['cegal_clave'] = [
+      '#type' => 'password',
+      '#title' => t('Clave CEGAL'),
+      '#default_value' => variable_get('cegal_clave', ''),
+    ];
+
+    $distribuidores = variable_get('distribuidores_confianza', array());
+    foreach($distribuidores as $key => $value) {
+      $form['distri_'.$key] = [
+        '#type' => 'fieldset',
+        '#title' => $value['name'],
+      ];
+
+      $form['distri_'.$key][$key.'_sinli_id'] = [
+        '#type' => 'textfield',
+        '#title' => t('Id de sinli'),
+        '#default_value' => $value['sinli_id'],
+      ];
+
+      $form['distri_'.$key][$key.'_name'] = [
+        '#type' => 'textfield',
+        '#title' => t('Nombre del distribuidor'),
+        '#default_value' => $value['name'],
+      ];
+
+      $form['distri_'.$key][$key.'_plazo'] = [
+        '#type' => 'select',
+        '#title' => t('Plazo estimado'),
+        '#options' => [
+          '1' => '2-3 días',
+          '2' => '3-4 días',
+          '3' => '7 días'
+        ],
+        '#default_value' => $value['plazo']
+      ];
+    }
+
+    $form['distri_new'] = [
+      '#type' => 'fieldset',
+      '#title' => "Nuevo distribuidor",
+    ];
+
+    $form['distri_new']['sinli_id'] = [
+      '#type' => 'textfield',
+      '#title' => t('Id de sinli'),
+      '#default_value' => '',
+    ];
+
+    $form['distri_new']['name'] = [
+      '#type' => 'textfield',
+      '#title' => t('Nombre del distribuidor'),
+      '#default_value' => '',
+    ];
+
+    $form['distri_new']['plazo'] = [
+      '#type' => 'select',
+      '#title' => t('Plazo estimado'),
+      '#options' => [
+        '1' => '2-3 días',
+        '2' => '3-4 días',
+        '3' => '7 días'
+      ],
+      '#default_value' => 0
+    ];
+
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#value' => 'enviar'
+    ];
+
+    return $form;
+  }
+
+  function katakrak_cegal_batch_process_form(array &$form, FormStateInterface $form_state): array {
+    $form['sin_portada'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Sin portadas'),
+      '#description' => t('Solo comprobar los items que no tengas portada'),
+    ];
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#value' => t('enviar'),
+    ];
+    return $form;
+  }
+
+  function katakrak_cegal_batch_process_form_submit($form, &$form_state) {
+    $sin_portada = $form_state['values']['sin_portada'];
+
+    if ($form_state['clicked_button']['#value'] == 'enviar') {
+      $batch = (new BatchBuilder())
+        ->setTitle(t('Consultando a Cegal'))
+        ->setFinishCallback('katakrak_cegal_batch_process_finish')
+        ->addOperation([
+          [
+            'katakrak_cegal_batch_process',
+            [$sin_portada],
+          ],
+        ])
+        ->setUrlOptions([
+          'base' => 'batch',
+          'query' => [
+            'destination' => '/my-batch-page',
+          ],
+        ])
+        ->toArray();
+
+      batch_set($batch);
+    }
+  }
+
+/**
+ * Batch function to process all the items
+ *
+ * @param type $context
+ */
+function katakrak_cegal_batch_process($sin_portada, &$context){
+  $result = views_get_view_result('libros_admin', 'libros_sin_portada');
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['max'] = count($result);
+    $context['results']['si_portada'] = 0;
+    $context['results']['no_portada'] = 0;
+  }
+  $cegal = new CegalSearch(\Drupal::config('cegal.settings')->get('cegal_user'), \Drupal::config('cegal.settings')->get('cegal_clave'));
+  $i = 0;
+  while ($i < 10 && $context['sandbox']['progress'] < $context['sandbox']['max']) {
+    $nid = $nids[$context['sandbox']['progress']];
+    $node = \Drupal::entityTypeManager()->getStorage('node')->load($nid);
+
+    $image = $cegal->cover($node->field_libro_isbn->value);
+
+    if ($image) {
+      $file = create_cover($image['data'], $node->field_libro_isbn->value . '.' . $image['format']);
+      if (!empty($file)) {
+        $node->field_libro_portada->setValue([
+          'target_id' => $file->id(),
+          'title' => $node->title,
+          'alt' => $node->title
+        ]);
+        $node->save();
+        \Drupal::logger('cegal')->notice($nid);
+      }
+      $context['results']['si_portada']++;
+    } else {
+      $context['results']['no_portada']++;
+    }
+
+    $i++;
+    $context['sandbox']['progress'] += 1;
+  }
+
+  $context['message'] = t("Processed @progress of @max books", array('@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max']));
+
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}

@@ -1,0 +1,14 @@
+services:
+  geslib.config:
+    class: Drupal\Core\Config\ConfigFactoryInterface
+    factory: ['@config.factory','get']
+    arguments: ['geslib.settings']
+
+
+  # geslib.event_subscriber:
+  #   class: Drupal\geslib\EventSubscriber\GeslibSubscriber
+  #   arguments: ['@messenger']
+  #   tags:
+  #     - { name: event_subscriber }
+
+

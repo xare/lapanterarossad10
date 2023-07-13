@@ -1,0 +1,474 @@
+<?php
+/**
+ * @file
+ * Code for the Katakrak Dilve feature.
+ */
+
+include 'katakrak_dilve.features.inc';
+/**
+ * Implementation of hook_menu().
+ */
+function katakrak_dilve_menu() {
+  $items = array();
+  $items['admin/commerce/config/dilve'] = array(
+    'title' => 'Dilve Integration',
+    'description' => 'Dilve options',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('katakrak_dilve_batch_process_form'),
+    'access arguments' => array('access dilve information'),
+  );
+  $items['admin/commerce/config/dilve/process'] = array(
+    'title' => 'Process Items',
+    'description' => 'Dilve',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/commerce/config/dilve/settings'] = array(
+    'title' => 'Settings',
+    'description' => 'Dilve options',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('katakrak_dilve_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%node/dilve'] = array(
+    'title' => 'Dilve',
+    'page callback' => 'katakrak_dilve_info',
+    'page arguments' => array(1),
+      'access callback' => 'katakrak_dilve_access_node_info',
+    'access arguments' => array('access dilve information', 1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 100,
+  );
+  return $items;
+}
+
+function katakrak_dilve_access_node_info($perm, $node) {
+  if (user_access($perm) && $node->type == 'libro')
+    return TRUE;
+  return FALSE;
+}
+
+/**
+* Implements hook_cron_queue_info().
+*/
+function katakrak_dilve_cron_queue_info() {
+  $queues = array();
+  $queues['dilveCronQueue'] = array(
+    'worker callback' => 'katakrak_dilve_process_item', //function to call for each item
+    'time' => 30, //seconds to spend working on the queue
+  );
+  return $queues;
+}
+
+/**
+* Implements hook_cron().
+*/
+function _katakrak_dilve_cron() {
+  $nodes_db = db_select('node', 'n');
+  $nodes_db->addJoin('LEFT', 'field_data_field_libro_dilve', 'd', 'n.nid = d.entity_id');
+  $nodes = $nodes_db->fields('n', array('nid'))->fields('d', array('field_libro_dilve_value'))
+    ->condition('type', 'libro')->isNull('d.field_libro_dilve_value')->range(0, 100)->execute();
+  if ($nodes->rowCount()) {
+    $queue = DrupalQueue::get('dilveCronQueue');
+    foreach ($nodes->fetchAll() as $nid) {
+      $node = node_load($nid->nid);
+      $queue->createItem($node->nid);
+      $node->field_libro_dilve['und'][0]['value'] = 0;
+      node_save($node);
+    }
+  }
+}
+
+function katakrak_dilve_permission() {
+  return array(
+    'access dilve information' => array(
+      'title' => t('Access dilve information'),
+      'description' => t('Perform administration tasks for my module.'),
+    ),
+  );
+}
+
+function katakrak_dilve_settings_form($form, &$form_state) {
+  $form['dilve_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Nombre de usuario'),
+    '#description' => t('Nombre de usuario en Dilve'),
+    '#size' => 30,
+    '#default_value' => variable_get('dilve_user', ''),
+  );
+  $form['dilve_pass'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Contraseña'),
+    '#description' => t('Contraseña en Dilve'),
+    '#size' => 30,
+    '#default_value' => variable_get('dilve_pass', ''),
+  );
+  return system_settings_form($form);
+}
+
+/**
+ * Creates the batch
+ * 
+ * @param type $form
+ * @param type $form_state
+ * @return type
+ */
+function katakrak_dilve_batch_process_form($form, &$form_state) {
+  $form['max'] = array(
+    '#title' => t('Número de elementos a procesar'),
+    '#description' => t('Si se deja vacío procesamos todos en un batch'),
+    '#type' => 'textfield',
+    '#size' => 10,
+  );
+  $form['limit'] = array(
+    '#title' => t('libros por iteracións'),
+    '#description' => t('Cantidad de libros que se procesan en cada vuelta del batch'),
+    '#type' => 'textfield',
+    '#size' => 10,
+    '#default_value' => 10,
+  );
+  $form['recheck'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Recheck'),
+    '#description' => t('Check again items not found in dilve'),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Procesar'),
+  );
+  return $form;
+}
+
+function katakrak_dilve_batch_process_form_submit($form, &$form_state) {
+  $max = $form_state['values']['max'] ? $form_state['values']['max'] : 0;
+  $limit = $form_state['values']['limit'];
+  $recheck = $form_state['values']['recheck'];
+  if ($form_state['clicked_button']['#value'] == 'Procesar'){
+    $batch = array(
+      'title' => t('Consultando a Dilve'),
+      'operations' => array(
+        array('katakrak_dilve_batch_process', array($max, $limit, $recheck)),
+      ),
+      'finished' => 'katakrak_dilve_batch_process_finish',
+    );
+    batch_set($batch);
+  }
+}
+
+
+
+/**
+ * 
+ * @param type $node
+ */
+function katakrak_dilve_info($node) {
+  $dilve = new DilveSearch(variable_get('dilve_user', ''), variable_get('dilve_pass', ''));
+  $book = $dilve->search($node->field_libro_isbn['und'][0]['value']);
+  if (is_string($book)) {
+    drupal_set_message($book, 'error');
+    $book = array();
+  }
+  return drupal_get_form('dilve_node_info_form', $node, $book);
+}
+
+function dilve_node_info_form($form, &$form_state, $node, $book) {
+  $form['title'] = array(
+    '#title' => 'Título',
+    '#type' => 'textfield',
+    '#size' => 30,
+    '#default_value' => isset($book['title']) ? $book['title'] : '',
+  );
+  $form['sinopsis'] = array(
+    '#title' => 'Sinopsis',
+    '#type' => 'textarea',
+    '#size' => 30,
+    '#default_value' => isset($book['description']) ? $book['description'] : '',
+  );
+  $form['price'] = array(
+    '#title' => 'Precio',
+    '#type' => 'textfield',
+    '#size' => 20,
+    '#default_value' => isset($book['price']) ? $book['price'] : '',
+  );
+  $form['year'] = array(
+    '#title' => t('Año'),
+    '#type' => 'textfield',
+    '#size' => 20,
+    '#default_value' => isset($book['year']) ? substr($book['year'], 0, 4) : '',
+  );
+  $form['pages'] = array(
+    '#title' => t('Páginas'),
+    '#type' => 'textfield',
+    '#size' => 20,
+    '#value' => isset($book['pages']) ? $book['pages'] : '',
+  );
+  if (isset($book['weight']) && $book['weight']['unit'] == 'gr') {
+    $form['weight'] = array(
+      '#title' => t('Peso'),
+      '#type' => 'textfield',
+      '#size' => 20,
+      '#value' => isset($book['weight']['value']) ? $book['weight']['value'] : '',
+    );
+  }
+  $form['image'] = array(
+    '#type' => 'hidden',
+    '#value' => isset($book['cover_url']) ? $book['cover_url'] : '',
+  );
+
+  if (isset($book['cover_url'])) {
+    $form['image_markup'] = array(
+      '#suffix' => '</div>',
+      '#prefix' => '<div>',
+      '#markup' => theme_image(array(
+        'path' => $book['cover_url'],
+        'width' => 120,
+        'height' => 200,
+        )
+      ),
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => "Actualizar libro",
+  );
+  return $form;
+}
+
+function dilve_node_info_form_submit($form, &$form_state) {
+  $node = $form_state['build_info']['args'][0];
+  $values = $form_state['values'];
+  
+  $product = commerce_product_load($node->field_libro_producto['und'][0]['product_id']);
+  if ($values['title']) {
+    $product->title = $values['title'];
+    $node->title_field['und'][0]['value'] = $values['title'];
+    $node->title = $values['title'];
+  }
+  
+  if (isset($values['weight'])) {
+    $product->field_product_peso['und'][0] = array(
+      'weight' => $values['weight'],
+      'unit' => 'g',
+    );
+  }
+  
+  if ($values['sinopsis']) {
+    $node->field_libro_sinopsis['und'][0]['value'] = $values['sinopsis'];
+    $node->field_libro_sinopsis['und'][0]['format'] = 'sinopsis';
+  }
+  if ($values['year'])
+    $node->field_libro_ano['und'][0]['value'] = $values['year'];
+  if ($values['pages'])
+    $node->field_libro_paginas['und'][0]['value'] = $values['pages'];
+  
+  if ($values['image']) {
+    $request = drupal_http_request($values['image']);
+    if ($request->code == 200) {
+      $ext = substr($values['image'], strrpos($values['image'], '.') + 1);  
+      $filename = $node->field_libro_ean['und'][0]['value'].'.'.$ext;
+      $file = create_cover($request->data, $filename);
+
+      if (!empty($file)) {
+        $node->field_libro_portada['und'][0] = $file;
+        $node->field_libro_portada['und'][0]['title'] = $node->title;
+        $node->field_libro_portada['und'][0]['alt'] = $node->title;
+      }
+    }
+  }
+  
+  $node->field_libro_dilve['und'][0]['value'] = 2;
+  
+  commerce_product_save($product);
+  node_save($node);
+  $form_state['redirect'] = 'node/'.$node->nid;
+}
+
+/**
+ * Batch function to process all the items
+ * 
+ * @param type $context
+ */
+function katakrak_dilve_batch_process($max, $limit, $recheck, &$context){
+  $nodes = db_select('node', 'n');
+  $nodes->addJoin('LEFT', 'field_data_field_libro_dilve', 'd', 'n.nid = d.entity_id');
+  $or = db_or()->isNull('d.field_libro_dilve_value')->condition('d.field_libro_dilve_value', 0);
+  if ($recheck) {
+    $or->condition('d.field_libro_dilve_value', 2);
+  }
+  $nodes->fields('n', array('nid'))->fields('d', array('field_libro_dilve_value'))
+    ->condition('type', 'libro')->condition($or);
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['max'] = $max ? $max : $nodes->execute()->rowCount();
+    $context['results']['in_dilve'] = 0;
+    $context['results']['no_dilve'] = 0;
+  }
+  
+  $dilve  = new DilveSearch(variable_get('dilve_user', ''), variable_get('dilve_pass', ''));
+  
+  $nids = $nodes->range(0, $limit)->execute()->fetchAll();
+  
+  foreach ($nids as $nid) {
+    watchdog("dilve", $nid->nid);
+    $node = node_load($nid->nid);
+    $book = $dilve->search($node->field_libro_ean['und'][0]['value']);
+    if (is_string($book)) {
+      $node->field_libro_dilve['und'][0]['value'] = 1;
+      $node->title_field['und'][0]['value'] = $node->title;
+      $context['results']['no_dilve']++;
+    }
+    else {
+
+      $product = commerce_product_load($node->field_libro_producto['und'][0]['product_id']);
+
+      if ($book['title']) {
+        $product->title = $book['title'];
+        $node->title = $book['title'];
+        $node->title_field['und'][0]['value'] = $book['title'];
+      }
+
+      if (isset($book['weight'])) {
+        $product->field_product_peso['und'][0] = array(
+          'weight' => $book['weight']['value'],
+          'unit' => 'g',
+        );
+      }
+
+      if (isset($book['description'])) {
+        $node->field_libro_sinopsis['und'][0]['value'] = $book['description'];                $node->field_libro_sinopsis['und'][0]['format'] = 'sinopsis';
+      }
+      if (isset($book['year'])) {
+        $year_number = $book['year'];
+        $year_terms = taxonomy_get_term_by_name($year_number, 'urtea');
+        if ($year_terms) {
+          $year = array_pop($year_terms);
+        }
+        else {
+          $year = new stdClass();
+          foreach (taxonomy_get_vocabularies() as $vid => $vocab){
+            if ($vocab->name == 'Año') {
+              $year->vid = $vid ;
+            }
+          }
+          $year->name = $year_number;
+          taxonomy_term_save($year);
+        }
+        $node->field_libro_year['und'][0]['tid'] = $year->tid;
+      }
+      if (isset($book['pages']))
+        $node->field_libro_paginas['und'][0]['value'] = $book['pages'];
+      if (isset($book["subtitle"]))
+        $node->field_libro_subtitulo['und'][0]['value'] = $book['subtitle'];
+      
+      if ($book['cover_url']) {
+        $request = drupal_http_request($book['cover_url']);
+        if ($request->code == 200) {
+          $ext = substr($book['cover_url'], strrpos($book['cover_url'], '.') + 1);  
+          $filename = $node->field_libro_ean['und'][0]['value'].'.'.$ext;
+          $file = create_cover($request->data, $filename);
+
+          if (!empty($file)) {
+            $node->field_libro_portada['und'][0] = $file;
+            $node->field_libro_portada['und'][0]['title'] = $node->title;
+            $node->field_libro_portada['und'][0]['alt'] = $node->title;
+          }
+        }
+      }
+
+      $node->field_libro_dilve['und'][0]['value'] = 2;
+      commerce_product_save($product);
+      $context['results']['in_dilve']++;
+    }
+    node_save($node);
+    $context['sandbox']['progress'] += 1;
+  }
+  $context['message'] = t("Processed @progress of @max books", array('@progress' => $context['sandbox']['progress'], '@max' => $context['sandbox']['max']));
+  if ($context['sandbox']['progress'] != $context['sandbox']['max']) {
+    $context['finished'] = $context['sandbox']['progress'] / $context['sandbox']['max'];
+  }
+}
+
+function katakrak_dilve_batch_process_finish($success, $results, $operations) {
+  if ($success) {
+    drupal_set_message(t("@count books found in dilve", array('@count' => $results['in_dilve'])));
+    drupal_set_message(t("@count books not found in dilve", array('@count' => $results['no_dilve'])));
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    $message = t('An error occurred while processing %error_operation with arguments: @arguments', array('%error_operation' => $error_operation[0], '@arguments' => print_r($error_operation[1], TRUE)));
+    drupal_set_message($message, 'error');
+  }
+}
+
+
+function katakrak_dilve_process_item($nid) {
+  $dilve  = new DilveSearch(variable_get('dilve_user', ''), variable_get('dilve_pass', ''));
+  $node = node_load($nid);
+  if ($node->field_libro_dilve['und'][0]['value'] == 0) {
+    $book = $dilve->search($node->field_libro_ean['und'][0]['value']);
+
+    if (is_string($book)) {
+      $node->field_libro_dilve['und'][0]['value'] = 1;
+      $node->title_field['und'][0]['value'] = $node->title;
+    }
+    else {
+      $product = commerce_product_load($node->field_libro_producto['und'][0]['product_id']);
+
+      if ($book['title']) {
+        $product->title = $book['title'];
+        $node->title = $book['title'];
+        $node->title_field['und'][0]['value'] = $book['title'];
+      }
+
+      if ($book['weight']) {
+        $product->field_product_peso['und'][0] = array(
+          'weight' => $book['weight']['value'],
+          'unit' => 'g',
+        );
+      }
+
+      if (isset($book['description'])) {
+        $node->field_libro_sinopsis['und'][0]['value'] = $book['description'];
+        $node->field_libro_sinopsis['und'][0]['format'] = 'sinopsis';
+      }
+      if (isset($book['year'])) {
+        $year_number = $book['year'];
+        $year_terms = taxonomy_get_term_by_name($year_number, 'urtea');
+        if ($year_terms) {
+          $year = array_pop($year_terms);
+        }
+        else {
+          $year = new stdClass();
+          foreach (taxonomy_get_vocabularies() as $vid => $vocab){
+            if ($vocab->name == 'Año') {
+              $year->vid = $vid ;
+            }
+          }
+          $year->name = $year_number;
+          taxonomy_term_save($year);
+        }
+        $node->field_libro_year['und'][0]['tid'] = $year->tid;
+      }
+      if (isset($book['pages']))
+        $node->field_libro_paginas['und'][0]['value'] = $book['pages'];
+      if (isset($book["subtitle"]))
+        $node->field_libro_subtitulo['und'][0]['value'] = $book['subtitle'];
+      if ($book['cover_url']) {
+        $file = create_cover($book['cover_url'], $node->field_libro_ean['und'][0]['value']);
+        if (!empty($file)){
+          $node->field_libro_portada['und'][0] = $file;
+          $node->field_libro_portada['und'][0]['title'] = $node->title;
+          $node->field_libro_portada['und'][0]['alt'] = $node->title;
+        }
+      }
+
+      $node->field_libro_dilve['und'][0]['value'] = 2;
+
+      commerce_product_save($product);
+    }
+    node_save($node);
+  }
+}

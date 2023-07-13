@@ -1,0 +1,18 @@
+geslib.settings_form:
+  title: 'Import Geslib File'
+  description: 'Carga inicial del fichero de geslib.'
+  parent: system.admin_config_system
+  route_name: geslib.settings_form
+  weight: 10
+geslib.list:
+  title: 'geslib list'
+  description: 'Geslib list'
+  parent: system.admin_config_system
+  route_name: geslib.list
+  weight: 10
+geslib.process_files:
+  title: 'geslib process files'
+  description: 'Geslib process files'
+  parent: system.admin_config_system
+  route_name: geslib.process_files
+  weight: 10

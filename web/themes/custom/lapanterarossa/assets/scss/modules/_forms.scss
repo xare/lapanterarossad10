@@ -1,0 +1,219 @@
+.select:not(.is-multiple):not(.is-loading)::after, .navbar-link:not(.is-arrowless)::after{
+    border-color: $dark;
+    border-width: 1px;
+    border-radius: 0;
+}
+
+.input::placeholder, .textarea::placeholder {
+    color:$gray;
+    opacity: 1;
+  }
+
+*:focus,*:visited {
+    outline: none !important;
+    box-shadow:none !important;
+}
+
+input, .input{
+    box-shadow: none !important;
+}
+
+//Search main
+.control.search-main{
+    @include tablet{
+        max-width: 50vw;
+        margin: 0 auto;
+    }
+    input{
+        background-color: $gray-bg;
+        display: flex;
+        align-items: center;
+        border: 0;
+        padding: 1rem;
+        font-size: $small;
+        color: $black;
+        height: 3.5rem;
+        border: 1px solid $gray-bg;
+        @include tablet{
+            padding: 1rem 2rem;
+            height: 4.5rem;
+            font-size: $semi-large;
+        }
+        &::placeholder{
+            font-size: $small;
+            color: $gray;
+            @include tablet{
+                font-size: $semi-large;
+            }
+        }
+        &:hover{
+            &::placeholder{
+                color: $black;
+            }
+        }
+        &:focus{
+            border-color:$primary;
+        }
+    }
+    .icon.is-search{
+        display: flex;
+        height: 100%;
+        align-items: center;
+        color: $gray;
+    }
+}
+
+//Labels
+label.label, .label:not(:last-child){
+    font-size: $small;
+    font-weight: 500;
+    margin-bottom: .5rem;
+    display: block;
+    color: $black;
+}
+
+//Fields
+.field:not(:last-child){
+    margin-bottom: 1.5rem;
+}
+
+//Inputs
+.control input{
+border-radius: 3px;
+border: 1px solid $black;
+background-color: transparent;
+color: $black;
+    &::placeholder{
+        color: $gray;
+    }
+    &:hover, &:active{
+        border-color: $primary;
+        background-color: $white;
+    }
+}
+
+//Box in form
+form .box{
+    background-color: $gray-bg;
+}
+
+
+//Display options
+  .options{
+    display: flex;
+    flex-flow: row;
+    gap:1rem;
+    justify-content: space-around;
+    .option{
+        flex: 1 1 0;
+    }
+  }
+
+
+
+//Checkbox as a button
+.option{
+    background-color: transparent;
+    border-radius: 4px;
+    border: 1px solid $black;
+    overflow: hidden;
+    text-align: center;
+    label {
+        color: $black;
+        span {
+            text-align: center;
+            display: block;
+          }
+          input {
+            position: absolute;
+            display: none;
+            color: $black;
+          }
+      }
+  }
+  
+  /* selects all of the text within the input element and changes the color of the text */
+  .option label input + span{
+    color: $black;
+    padding: .5rem .75rem;
+    &:hover, &:active{
+        cursor: pointer;
+        background-color: $black;
+        color: $white;
+    }
+  }
+  
+  /* This will declare how a selected input will look giving generic properties */
+  .option input:checked + span {
+      color: $white;
+      background-color: $black;
+  }
+
+
+  // custom checkboxes
+
+.is-checkradio[type="checkbox"] + label::before{
+    transition: all 0.2s ease;
+}
+
+.is-checkradio[type="radio"]:hover:not([disabled]) + label::before, .is-checkradio[type="radio"]:hover:not([disabled]) + label:before, .is-checkradio[type="checkbox"]:hover:not([disabled]) + label::before, .is-checkradio[type="checkbox"]:hover:not([disabled]) + label:before{
+    border-color: $dark;
+    background-color: $white;
+}
+
+.is-checkradio[type="checkbox"] + label::after, .is-checkradio[type="checkbox"] + label:after{
+    border-color: $dark;
+    color: $dark;
+    
+}
+
+.is-checkradio[type="radio"]:checked + label::before, .is-checkradio[type="radio"]:checked + label:before, .is-checkradio[type="checkbox"]:checked + label::before, .is-checkradio[type="checkbox"]:checked + label:before{
+    border-color: $primary;
+}
+
+.is-checkradio[type="checkbox"]:checked + label::after, .is-checkradio[type="checkbox"]:checked + label:after{
+    color: $white;
+}
+
+.is-checkradio[type="radio"] + label::before, .is-checkradio[type="radio"] + label:before, .is-checkradio[type="checkbox"] + label::before, .is-checkradio[type="checkbox"] + label:before{
+    border-color: $dark;
+}
+
+.is-checkradio[type="checkbox"] + label::before, .is-checkradio[type="checkbox"] + label:before{
+    border-radius: 3px;
+}
+
+
+//Stepper
+.stepper-input {
+    width: 85px;
+    display: flex;
+    border: 1px solid $black;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.stepper-input__button {
+    background: $white;
+    border: none;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    padding: .2rem .5rem;
+}
+.stepper-input__content {
+    flex: 1;
+}
+.stepper-input__input {
+    border: none;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    font-size: $regular;
+}
+
+//form cart
+.form-cart{
+    margin-top: 2rem;
+}

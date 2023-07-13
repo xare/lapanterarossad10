@@ -1,0 +1,44 @@
+services:
+  geslib.hello:
+    class: Drupal\geslib\Command\GeslibHelloCommand
+    tags:
+      - { name: drush.command }
+  geslib.log:
+    class: Drupal\geslib\Command\GeslibLogCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }
+  geslib.lines:
+    class: Drupal\geslib\Command\GeslibLinesCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }
+  geslib.showTables:
+    class: Drupal\geslib\Command\GeslibShowTablesCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }
+  geslib.truncateTable:
+    class: Drupal\geslib\Command\GeslibTruncateTableCommand
+    tags:
+      - { name: drush.command }
+  geslib.storeEditorials:
+    class: Drupal\geslib\Command\GeslibStoreEditorialsCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }
+  geslib.storeProductCategories:
+    class: Drupal\geslib\Command\GeslibStoreProductCategoriesCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }
+  geslib.storeProducts:
+    class: Drupal\geslib\Command\GeslibStoreProductsCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }
+  geslib.deleteAllProducts:
+    class: Drupal\geslib\Command\GeslibDeleteAllProductsCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }

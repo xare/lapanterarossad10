@@ -1,0 +1,11 @@
+name: Commerce API Test
+type: module
+description: Contains various non-specific things needed in Commerce API tests.
+package: Testing
+dependencies:
+  - commerce_api:commerce_api
+
+# Information added by Drupal.org packaging script on 2023-04-11
+version: '8.x-1.0-rc2'
+project: 'commerce_api'
+datestamp: 1681197344

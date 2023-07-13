@@ -1,0 +1,20 @@
+field.value.commerce_tax_rate:
+  type: mapping
+  label: 'Tax rate'
+  mapping:
+    value:
+      type: string
+      label: 'Tax rate'
+
+field.field_settings.commerce_tax_rate:
+  type: mapping
+  label: 'Tax rate field settings'
+  mapping:
+    allowed_zones:
+      type: sequence
+      label: 'Allowed zones'
+      sequence:
+        - type: string
+    tax_type:
+      type: string
+      label: 'Tax type'

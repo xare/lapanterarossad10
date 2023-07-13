@@ -1,0 +1,6 @@
+starterkit.helloworldpage:
+  title: Hello World Link
+  description: Link to Hello World Link
+  route_name: starterkit.hello
+  weight: 10
+  menu_name: main

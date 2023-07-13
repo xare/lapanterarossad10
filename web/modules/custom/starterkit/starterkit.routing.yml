@@ -1,0 +1,14 @@
+starterkit.hello:
+  path: '/starterkit/hello'
+  defaults:
+    _controller: '\Drupal\starterkit\Controller\HelloWorldController::simpleContent'
+    _title: 'Starterkit: Hello World'
+  requirements:
+    _permission: 'access content'
+starterkit.hello.variable:
+  path: '/starterkit/hello/variable/{name_1}/{name_2}'
+  defaults:
+    _controller: '\Drupal\starterkit\Controller\HelloWorldController::variableContent'
+    _title: 'Dynamic Greeting'
+  requirements:
+    _permission: 'access content'

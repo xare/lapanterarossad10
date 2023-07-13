@@ -1,0 +1,7 @@
+dilve.settings:
+  path: '/admin/settings/dilve'
+  defaults:
+    _form: '\Drupal\dilve\Form\DilveSettingsForm'
+    _title: 'Dilve Settings'
+  requirements:
+    _permission: 'administer site configuration'

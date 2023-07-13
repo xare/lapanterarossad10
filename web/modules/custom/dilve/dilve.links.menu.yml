@@ -1,0 +1,6 @@
+dilve.admin:
+  title: Dilve Settings
+  description: Dilve Settings
+  route_name: dilve.settings
+  weight: 100
+  parent: system.admin_config

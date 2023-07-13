@@ -1,0 +1,10 @@
+services:
+  dilve.hello:
+    class: Drupal\dilve\Command\DilveHelloCommand
+    tags:
+      - { name: drush.command }
+  dilve.scanProducts:
+    class: Drupal\dilve\Command\DilveScanProductsCommand
+    arguments : ['@logger.factory']
+    tags:
+      - { name: drush.command }

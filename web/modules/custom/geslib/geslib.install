@@ -1,0 +1,187 @@
+<?php
+
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\taxonomy\Entity\Vocabulary;
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the rsvplist module.
+ */
+
+ function geslib_schema() {
+    $schema = [];
+    //Create a database called rsvplist with the following columns
+    // 1) id [serial]
+    // 2) filename [varchar]
+    // 3) start_date [int]
+    // 4) end_date [int]
+    // 5) status [varchar]
+    // 6) lines_count [int]
+
+    $schema['geslib_log'] = [
+        'description' => 'Stores filename, startdate, end_date, status and lines_count.',
+        'fields' =>[ 
+            'id'=>[
+                'description'=> 'The ordinary identifier for the record.',
+                'type' => 'serial',
+                'size' => 'small',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ],
+            'filename' => [
+                'description' => "The filename of the file containing the geslib info.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'start_date' => [
+                'description' => 'Date and time when we start loading the file',
+                'type' => 'varchar',
+                'length' => 25,
+                'not null' => TRUE,
+            ],
+            'end_date' => [
+                'description' => 'Date and time when we end loading the file',
+                'type' => 'varchar',
+                'length' => 25,
+                'not null' => FALSE,
+            ],
+            'status' => [
+                'description' => 'Status of the queue with possible values waiting | enqueued | processed.',
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'lines_count' => [
+                'description' => "The number of lines contained in the file.",
+                'type' => 'int',
+                'unsigned' => TRUE, 
+                'not null' => FALSE,
+            ],
+        ],
+        'primary key' => ['id'],
+    ];
+
+    // Create a database table named 'geslib_lines' with the following fields:
+    // 1) id[int]
+    // 2) log_id[int]
+    // 3) geslib_id [int]
+    // 4) Action [varchar]
+    // 5) entity [varchar]
+    // 6) content [json]
+    // 7) queued // boolean 0|1
+    $schema['geslib_lines'] = [
+        'description' => 'Geslib Lines is the table of the ',
+        'fields' => [
+            'id' =>[
+                'description' => 'The primary identifier for a line',
+                'type' => 'serial',
+                'size' => 'small',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ],
+            'log_id' => [
+                'description' => 'The log.id that correspond to the processed file.',
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ],
+            'geslib_id' => [
+                'description' => "The internal ID provided by Geslib.",
+                'type' => 'int',
+                'unsigned' => TRUE, 
+                'not null' => TRUE,
+            ],
+            'action' => [
+                'description' => "The Action related to the geslib_id.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'entity' => [
+                'description' => "The type of entity that will be created, deleted or modified by geslib.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'content' => [
+                'description' => "JSON chain that contains all the information related to the given geslib_id.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'queued' => [
+                'description' => 'The queue status',
+                'type' => 'int',
+                'size' => 'tiny',
+                'not null' => TRUE,
+                'default' => 0,
+            ],
+        ],
+        'primary key' => ['id'],
+        'foreign keys' => [
+            'log_id' => [
+              'table' => 'geslib_log',
+              'columns' => ['log_id' => 'id'],
+            ],
+        ],
+    ];
+
+    return $schema;
+ }
+
+ /**
+ * Implements hook_install().
+ */
+function geslib_install() {
+    $directory = 'public://geslib';
+    
+    // Create the directory and ensure it's writable.
+    \Drupal::service('file_system')->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+    // Create a vocabulary.
+    $taxonomy_types = ['editorials', 'product_categories'];
+    foreach ($taxonomy_types as $taxonomy_type) {
+        if (!Vocabulary::load($taxonomy_type)) {
+            $vocabulary = Vocabulary::create([
+                'vid' => $taxonomy_type,
+                'description' => 'Vocabulary for Geslib editorials',
+                'name' => $taxonomy_type,
+            ]);
+            $vocabulary->save();
+        }
+    }
+    if (!FieldStorageConfig::loadByName('taxonomy_term', 'geslib_id')) {
+        $field_storage = FieldStorageConfig::create([
+            'field_name' => 'geslib_id',
+            'entity_type' => 'taxonomy_term',
+            'type' => 'integer',
+            'cardinality' => 1,
+        ]);
+        $field_storage->save();
+    }
+
+    // Attach the field to 'editorials' vocabulary (similar to defining an instance in D7).
+    foreach ($taxonomy_types as $taxonomy_type) {
+        if (!FieldConfig::loadByName('taxonomy_term', $taxonomy_type, 'geslib_id')) {
+            $field = FieldConfig::create([
+                'field_name' => 'geslib_id',
+                'entity_type' => 'taxonomy_term',
+                'bundle' => $taxonomy_type,
+                'label' => 'Geslib '. $taxonomy_type. ' ID',
+                'description' => 'Field added by my_module',
+            ]);
+            $field->save();
+        }
+    }
+}
+  
+  /**
+   * Implements hook_uninstall().
+   */
+  function geslib_uninstall() {
+    $directory = 'public://geslib';
+    
+    // Remove the directory when the module is uninstalled.
+    \Drupal::service('file_system')->deleteRecursive($directory);
+    
+    \Drupal::database()->schema()->dropTable('geslib_log');
+    \Drupal::database()->schema()->dropTable('geslib_lines');
+  }
+  

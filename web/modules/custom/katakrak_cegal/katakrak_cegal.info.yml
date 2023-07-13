@@ -1,0 +1,7 @@
+name : Katakrak - Cegal
+type: module
+core_version_requirement: ^8 || ^9 || ^10
+core : 8.x
+package : Katakrak
+version : 8.x-0.1
+project : katakrak_cegal

@@ -1,0 +1,44 @@
+name: 'La Pantera Rossa'
+type: theme
+'base theme': stark
+starterkit: true
+version: VERSION
+libraries:
+  - lapanterarossa/base
+  - lapanterarossa/messages
+  - core/normalize
+libraries-extend:
+  user/drupal.user:
+    - lapanterarossa/user
+  core/drupal.dropbutton:
+    - lapanterarossa/dropbutton
+  core/drupal.dialog:
+    - lapanterarossa/dialog
+  file/drupal.file:
+    - lapanterarossa/file
+  core/drupal.progress:
+    - lapanterarossa/progress
+core_version_requirement: ^10
+generator: 'starterkit_theme:10.0.2'
+description: 'Theme for La Pantera Rossa'
+regions:
+  header: 'Header'
+  brand: 'Branding'
+  primary_menu: 'Primary menu'
+  secondary_menu: 'Secondary menu'
+  highlighted: 'Highlighted'
+  help: 'Help'
+  content: 'Content'
+  sidebar_first: 'Left sidebar'
+  sidebar_second: 'Right sidebar'
+  footer: 'Footer'
+  footer_left: 'Footer Left'
+  footer_center: 'Footer Center'
+  footer_right: 'Footer Right'
+  colofon_left: 'Colofon Left'
+  colofon_right: 'Colofon Right'
+  breadcrumb: 'Breadcrumb'
+  page_top: 'Page top'
+  page_bottom: 'Page bottom'
+  top_start: 'Top Start'
+  top_end: 'Top End'

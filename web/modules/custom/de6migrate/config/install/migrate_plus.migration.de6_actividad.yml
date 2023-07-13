@@ -1,0 +1,50 @@
+id: de6_actividad
+label: Actividad
+migration_tags:
+  - Drupal 6
+deriver: Drupal\node\Plugin\migrate\D6NodeDeriver
+migration_group: de6
+source:
+  plugin: d6_node
+  node_type: actividad
+process:
+  #  nid and vid commented out will allow them to autoincrement. Safe as long
+  #    as nothing else is referencing them.
+  nid: nid
+  vid: vid
+  type:
+    plugin: default_value
+    default_value: actividad
+  langcode:
+    plugin: default_value
+    source: language
+    default_value: "und"
+  title: title
+  field_act_organizador: field_act_organizador
+  field_act_link_colectivo: field_act_link_colectivo
+  field_act_fecha_final: field_act_fecha_final
+  field_act_lugar: field_act_lugar
+  # audio_video: audio_video
+  # videos: videos
+  # videospeque: videospeque
+  # videosmasqpeque: videosmaspeque
+  # audio_portada: audio_portada
+  uid:
+    plugin: default_value
+    default_value: 1
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  body/format:
+    plugin: default_value
+    default_value: basic_html
+    no_stub: false
+  body/value: body
+  body/summary: teaser
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+destination:
+  plugin: entity_complete:node

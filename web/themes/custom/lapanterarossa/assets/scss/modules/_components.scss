@@ -1,0 +1,276 @@
+//Books
+.grid-books{
+    flex-wrap: wrap;
+    .book-item{
+        text-align: center;
+        display: flex;
+        flex-flow: column nowrap;
+        margin-bottom: 2rem;
+        border-radius: $radius;
+        position: relative;
+        &:hover, &:active{
+            background-color: $primary-light;
+            img{
+                transform: scale(1.05);
+            }
+        }
+        .cover{
+            margin:0 auto .75rem auto;
+            overflow: hidden;
+            img{
+                height: 180px;
+                width: auto;
+                border: 1px solid $gray-light;
+                transition: transform .5s ease;
+            }
+        }
+        .title{
+            font-weight: 500;
+            color: $black;
+            margin:0 auto .75rem auto;
+            text-align: center;
+            max-width: 20ch;
+            flex-grow: 1;
+        }
+        .author{
+            margin-bottom: 1rem;
+            font-size: $small;
+            color: $gray;
+        }
+        .price{
+            margin-top:auto;
+        }
+        @include desktop{
+            &::before{
+                content: "";
+                width: 1px;
+                background-color: $primary-light;
+                height: calc(100% - 20px);
+                position: absolute;
+                right: 0;
+                top: 10px;
+            }
+            &:nth-child(4n){
+                &::before{
+                    display: none;
+                }
+            }
+            &:only-child {
+                &::before{
+                    display: none;
+                }
+            }
+        }
+    }
+}
+
+
+//Categories - filtros
+.categories{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: .75rem;
+    padding: 2rem 0 3rem 0;
+    @include tablet{
+        grid-template-columns: repeat(3, 1fr);
+    }
+    @include desktop{
+        grid-template-columns: repeat(4, 1fr);
+    }
+    li{
+        a{
+            width: 100%;
+            &.is-active, &:hover, &:active{
+                background-color: $black;
+                border-color: $black;
+                color: $white;
+            }
+        }
+    }
+}
+
+
+//Book and event detail
+
+.detail{
+    .detail-content{
+        display: flex;
+        flex-direction: column;
+    }
+    h1,h2{
+        @include desktop{
+            max-width: 90%;
+        }
+    }
+    .author{
+        margin-top: 1.5rem;
+    }
+    .tag{
+        margin: 1.5rem 0 2.5rem 0;
+    }
+    .price{
+        margin: 1.5rem 0;
+        display: flex;
+        align-items: center;
+        font-size: $semi-large;
+        font-weight: 500;
+        span{
+            color: $gray;
+            font-size: $small;
+            margin-left: 1rem;
+        }
+    }
+    .buttons{
+        margin-top: auto;
+    }
+    .cover{
+        img{
+            border: 1px solid $gray-line;
+        }
+    }
+    .poster{
+        img{
+            min-width: 100%;
+            border: 1px solid $gray-line;
+        }
+    }
+}
+
+//Book data list
+.data-column{
+    margin-top: 1.5rem;
+    @include desktop{
+        margin-top: 0;
+    }
+}
+.book-data{
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    li{
+        font-size: $smaller;
+        padding-bottom: .5rem;
+        margin-bottom: .5rem;
+        border-bottom: 1px solid $gray;
+        span{
+            font-weight: 500;
+            @include desktop{
+                display: block;
+            }
+        }
+        &:last-child{
+            border: none;
+            padding-bottom: 0;
+        }
+    }
+}
+
+
+//Date box event - agenda detalle
+.date-box{
+    background-color: $gray-bg;
+    padding: .75rem 1rem;
+    display: flex;
+    @include tablet{
+        flex-direction: column;
+    }
+    .number{
+        font-weight: 600;
+        font-size: 40px;
+    }
+    .month{
+        text-transform: uppercase;
+        margin-bottom: .4rem;
+    }
+    .day{
+        color: $gray;
+    }
+    .time{
+        margin-top: 1rem;
+        @include mobile{
+            margin-left: auto;
+            margin-top: auto;
+        }
+    }
+}
+
+
+//Article news
+.news-detail{
+    .article{
+        margin-top: 1.5rem;
+    }
+}
+
+
+//Cart
+.cart-resume{
+    margin: 2rem 0;
+    @include tablet{
+        text-align: right;
+    }
+    .total{
+        span{
+            width: 200px;
+            font-weight: 600;
+            font-size: $semi-large;
+        }
+    }
+    p:not(:last-child){
+        margin-bottom: 1rem;
+    }
+}
+
+.resume-box{
+    margin-top: 3rem;
+    background-color: $primary-light;
+    padding: 1rem;
+    border-radius: $radius;
+}
+
+.cart-items{
+    li{
+        display: flex;
+        flex-flow: row;
+        gap: 1rem;
+        align-items: center;
+        padding-bottom: .5rem;
+        margin-bottom: .5rem;
+        border-bottom: 1px solid $gray-light;
+        font-size: $small;
+        .item-cover{
+            display: none;
+            width: 60px;
+            flex-shrink:0;
+            @include tablet{
+                display: block;
+            }
+        }
+        .item-quantity{
+            font-size: $smaller;
+        }
+        .item-price{
+            text-align: right;
+            padding-left: 1rem;
+            margin-left: auto;
+        }
+    }
+}
+
+
+
+//Boxes
+.box{
+    border-radius: $radius;
+    padding: 1.5rem;
+    &.is-pink, &.is-primary{
+        background-color: $primary-bg;
+    }
+    h2,h3{
+        font-size: $title-mobile;
+        margin-bottom: .5rem;
+        font-family: $family-sans-serif;
+        font-weight: 500;
+        font-size: $semi-large;
+    }
+}

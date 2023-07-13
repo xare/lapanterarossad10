@@ -1,0 +1,41 @@
+//Cart
+.table.table-cart{
+    width: 100%;
+    border-collapse: collapse;
+    tr{
+        border-bottom: 1px solid $black;
+        &.tr-price{
+            text-align: right;
+        }
+    }
+    th{
+        padding: .75rem 1rem;
+        font-weight: 500;
+        font-size: $small;
+    }
+    td{
+        padding: .75rem 1rem;
+        vertical-align: middle;
+        &.td-book{
+            .cover{
+                width: 70px;
+                border: 1px solid $gray-line;
+                display: none;
+                @include tablet{
+                    display: block;
+                }
+            }
+        }
+        &.td-stepper{
+            @include tablet{
+                padding-right: 2rem;
+            }
+        }
+        &.td-price{
+            text-align: right;
+        }
+        &.td-delete{
+            text-align: center;
+        }
+    }
+}

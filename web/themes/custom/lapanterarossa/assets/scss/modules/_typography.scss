@@ -1,0 +1,290 @@
+//Google font
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+
+// Google icons
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0');
+
+//Fonts titles
+@font-face {
+    font-family: 'domaine_display_narrowregular';
+    src: url('../fonts/domaine-display-narrow-regular.woff2') format('woff2'),
+         url('../fonts/domaine-display-narrow-regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+//Sizes
+$tiny:10.5px;
+$smaller:12px;
+$small:14px;
+$regular:16px;
+$semi-large:20px;
+$large:28px;
+
+$title-h1:50px;
+$title-h2:40px;
+$title-h3:35px;
+$title-mobile:28px;
+$title-small:22px;
+
+
+
+body{
+    color: $black;
+    font-size: $regular;
+    line-height: 1.3;
+    font-family: $family-sans-serif;
+}
+
+
+a{
+    color: $primary;
+    transition: all 0.3s ease;
+    &:hover{
+        color: $primary-dark;
+    }
+}
+
+.strong{
+    font-weight: 500;
+}
+
+//Titles
+
+h1,h2,h3, .is-claim{
+    font-family: $title-family;
+    font-size: $title-mobile;
+    line-height: 1.15;
+}
+
+h1{
+    @include tablet{
+       font-size: $title-h2;
+    }
+    @include desktop{
+        font-size: $title-h1;
+     }
+}
+
+h2{
+    @include tablet{
+       font-size: $title-h2;
+    }
+}
+
+h3{
+    @include tablet{
+       font-size: $title-h3;
+    }
+}
+
+h4{
+    font-size: $semi-large;
+    font-weight: 500;
+}
+
+.subtitle{
+    $title-small:22px;
+    @include tablet{
+        font-size: $title-h3;
+     }
+}
+
+img{
+    font-size: 0px;
+    line-height: 0;
+    display: block;
+}
+
+.p-result{
+    margin-bottom: 1.5rem;
+}
+
+.lead{
+    margin-top: 1rem;
+    @include tablet{
+        font-size: 18px;
+    }
+    @include desktop{
+        max-width: 45ch;
+    }
+}
+
+.euro{
+    font-size: 22px;
+}
+
+.link-danger{
+    color: red;
+}
+
+.is-small{
+    font-size: $small;
+}
+
+.is-light{
+    color: $gray;
+}
+
+hr{
+    height: 1px;
+    background-color: $gray-line;
+    &.is-dark{
+        background-color: $dark;
+    }
+}
+
+//footer claim
+.footer-claim{
+    font-family: $title-family;
+    color: $primary-medium;
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: .03rem;
+    @include desktop{
+        width: 24ch;
+    }
+}
+
+
+//articles
+.article{
+    p{
+        line-height: 1.4;
+    }
+    p:not(:last-child){
+        margin-bottom: 1.5rem;
+    }
+    h1,h2,h3,h4{
+        font-family: $family-sans-serif;
+        font-size: $regular;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        @include tablet{
+            font-weight: 500;
+            font-size: $semi-large;
+        }
+    }
+}
+
+.article.benefits{
+    margin-top: 2rem;
+    position: relative;
+    h3{
+        margin-bottom: .25rem;
+        font-size: $regular;
+        font-weight: 600;
+    }
+}
+
+.article.detail{
+    h2, p{
+        margin-bottom: 1rem;
+    }
+    h2:not(:first-of-type){
+        margin-top: 2.5rem;
+    }
+    h2,h3{
+        font-size: $semi-large;
+        
+    }
+    h2{
+        font-weight: 600;
+    }
+    h3{
+        font-weight: 500;
+    }
+}
+
+.subcontent{
+    margin-top: 1.5rem;
+    li{
+        border-radius: $radius;
+        border: 1px solid $gray-line;
+        padding: 1.5rem 1.5rem .5rem 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-flow: column;
+        gap: 1rem;
+        @include tablet{
+            flex-flow: row;
+        }
+    }
+    h3{
+        margin-bottom: .5rem;
+    }
+    figure{
+        width: 55px;
+        height: 55px;
+        margin-top: -5px;
+        flex-shrink: 0;
+    }
+}
+
+
+//Figures
+
+figure.is-rounded{
+    img{
+        border-radius:  $radius;
+    }
+}
+
+figure.is-squared{
+    img{
+        @include tablet{
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            height: 100%;
+        }
+    }
+}
+
+figure.is-header{
+    img{
+        object-fit: cover;
+        aspect-ratio: 16 / 7;
+        @include tablet{
+            aspect-ratio: 5 / 3;
+        }
+    }
+}
+
+figure.is-fullwidth{
+   img{
+    min-width: 100%;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+    @include tablet{
+        aspect-ratio: 16 / 6;
+    }
+   }
+}
+
+figure.bono-label{
+    margin-bottom: 1rem;
+    @include tablet{
+        position: absolute;
+        right: 20px;
+        top: -100px;
+    }
+    img{
+        width: 80px;
+        height: 80px;
+        opacity: .7;
+        @include tablet{
+            width: 90px;
+            height: 90px;
+        }
+    }
+}
+
+//List bullets
+.list-bullets{
+    list-style-type: disc;
+    margin-left: 1rem;
+    li{
+        margin-bottom: .5rem;
+    }
+}
