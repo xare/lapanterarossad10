@@ -41,8 +41,8 @@ base:
         weight: -10
       css/components/more-link.css:
         weight: -10
-      css/components/navbar-main.css:
-        weight: -10
+      # css/components/navbar-main.css:
+      #   weight: -10
       css/components/navbar-top.css:
         weight: -10
       css/components/pager.css:

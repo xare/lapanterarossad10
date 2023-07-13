@@ -13,13 +13,15 @@
  * - site_slogan: Slogan for site as defined in Site information settings.
  */
 #}
+
 {% block content %}
   {% if site_logo %}
     <a
       href="{{ path('<front>') }}"
       rel="home"
-      class="site-logo navbar-item logo-regular">
-        <img src="{{ site_logo }}" alt="{{ 'Home'|t }}" />
+      class="navbar-item logo-regular"
+      title="Ir a la página de inicio">
+        <img src="{{ site_logo }}" alt="{{ site_name }} logo | {{ 'Home'|t }}" class="logo" />
     </a>
   {% endif %}
   {% if site_name %}

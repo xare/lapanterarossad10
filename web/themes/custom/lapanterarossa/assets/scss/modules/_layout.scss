@@ -64,7 +64,7 @@ html {
 
 .section.has-drops{
     @include tablet{
-        background-image: url("../images/drops1.png"), url("../images/drops2.png");
+        background-image: url("../../images/icons/drops1.png"), url("../../images/icons/drops2.png");
         background-repeat: no-repeat, no-repeat;
         background-position: left top, right top;
         background-size: 180px;
@@ -245,7 +245,7 @@ html {
     overflow: hidden;
     &::before{
         content: "";
-        background:url(../images/facebook.svg);
+        background:url(../../images/icons/facebook.svg);
         background-size: cover;
         width: 32px;
         height: 32px;
@@ -258,28 +258,28 @@ html {
 .twitter{
     @extend .facebook;
     &::before{
-        background:url(../images/twitter.svg);
+        background:url(../../images/icons/twitter.svg);
         background-size: cover;
     }
 }
 .youtube{
     @extend .facebook;
     &::before{
-        background:url(../images/youtube.svg);
+        background:url(../../images/icons/youtube.svg);
         background-size: cover;
     }
 }
 .instagram{
     @extend .facebook;
     &::before{
-        background:url(../images/instagram.svg);
+        background:url(../../images/icons/instagram.svg);
         background-size: cover;
     }
 }
 .telegram{
     @extend .facebook;
     &::before{
-        background:url(../images/telegram.svg);
+        background:url(../../images/icons/telegram.svg);
         background-size: cover;
     }
 }

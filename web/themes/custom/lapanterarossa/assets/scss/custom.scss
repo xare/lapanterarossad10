@@ -48,11 +48,11 @@ border-top-right-radius: 12px;
 
 @mixin radius-bottom{
     -webkit-border-bottom-right-radius: 12px;
--webkit-border-bottom-left-radius: 12px;
--moz-border-radius-bottomright: 12px;
--moz-border-radius-bottomleft: 12px;
-border-bottom-right-radius: 12px;
-border-bottom-left-radius: 12px;
+    -webkit-border-bottom-left-radius: 12px;
+    -moz-border-radius-bottomright: 12px;
+    -moz-border-radius-bottomleft: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
 }
 
 @mixin box-shadow{

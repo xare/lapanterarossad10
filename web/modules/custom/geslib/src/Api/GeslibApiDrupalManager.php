@@ -279,9 +279,9 @@ class GeslibApiDrupalManager {
     
             $variation = $variation_storage->create([
               'type' => 'default',
-              'sku' => 'YOUR-SKU-' . rand(), // replace with your SKU logic
+              'sku' => $ean, // replace with your SKU logic
               'status' => 1,
-              'price' => new \Drupal\commerce_price\Price($book_price, 'USD'), // replace 'USD' with your currency code
+              'price' => new \Drupal\commerce_price\Price($book_price, 'EUR'), // replace 'USD' with your currency code
             ]);
     
             $product->addVariation($variation);
@@ -337,7 +337,7 @@ class GeslibApiDrupalManager {
                     ->fields('gl',['content'])
                     ->condition('geslib_id', $geslib_id, '=')
                     ->condition('entity', $type, '=')
-                    ->range( 0,1 )
+                    ->range( 0, 1 )
                     ->execute()
                     ->fetchField();
 	}

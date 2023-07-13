@@ -42,3 +42,4 @@ regions:
   page_bottom: 'Page bottom'
   top_start: 'Top Start'
   top_end: 'Top End'
+logo: logo.svg

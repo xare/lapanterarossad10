@@ -2,10 +2,10 @@ nav.navbar {
     padding-block: 1rem !important;
 }
 
-nav.navbar>.navbar-brand {
+/* nav.navbar>.navbar-brand {
     margin-left: 0.75rem !important;
     margin-inline-end: 2rem;
-}
+} */
 
 .navbar {
     flex: none;
