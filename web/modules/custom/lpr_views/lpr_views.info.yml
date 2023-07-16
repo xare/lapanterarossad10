@@ -1,0 +1,13 @@
+name: LPR VIEWS
+type: module
+description: 'Provides a View display custom styles for different contents in La Pantera Rossa website.'
+package: Views
+core_version_requirement: ^9 || ^10
+dependencies:
+  - commerce:commerce
+  - drupal:views
+# This is important!
+theme:
+  views_view_lpr_shop_view:
+    template: 'views_view_lpr_shop_view'
+    path: 'templates/views'

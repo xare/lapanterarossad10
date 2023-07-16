@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * LPR Views module help and theme functions.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function lpr_views_theme($existing, $type, $theme, $path) {
+  // Store LPR VIEWS preprocess theme functions in a separate .inc file.
+  //\Drupal::moduleHandler()->loadInclude('lpr_views', 'inc', 'lpr_views.theme');
+  $templatePath = \Drupal::service('extension.list.module')->getPath('lpr_views') . '/templates/views';
+
+  // Debugging line:
+  \Drupal::logger('lpr_views')->notice('Template path: ' . $templatePath);
+    return [
+        /* 'lpr_views' => [
+            'file' => 'lpr_views.theme.inc',
+        ], */
+        'views_view_lpr_shop_view' => [
+            'template' => 'views-view-lpr-shop-view',
+            'base hook' => 'views_view',
+            'path' => $templatePath,
+        ],
+    ];
+}

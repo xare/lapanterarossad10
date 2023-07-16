@@ -2,12 +2,16 @@
 
 namespace Drupal\geslib\Api;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\taxonomy\Entity\Vocabulary;
+use Drupal\taxonomy\Entity\Term;
+
 
 use PDO;
 
 class GeslibApiDrupalManager {
     const GESLIB_LINES_TABLE = 'geslib_lines';
     const GESLIB_LOG_TABLE = 'geslib_log';
+    
     static $geslibLinesKeys = [
 		'log_id', // int relation oneToMany with geslib_log
 		'geslib_id', // int 
@@ -249,12 +253,28 @@ class GeslibApiDrupalManager {
         $product_geslib_lines = $query->fetchAll(PDO::FETCH_OBJ);
 		foreach($product_geslib_lines as $product_geslib_line) {
 			$this->storeProduct($product_geslib_line->geslib_id, $product_geslib_line->content);
-		}
+            
+        }
 	}
     public function storeProduct($geslib_id, $content) {
+
+        
         $content = json_decode($content, true);
         $ean = $content['ean'];
         $author = $content['author'];
+            if(null !== $author) {
+                $vocabulary = \Drupal\taxonomy\Entity\Vocabulary::load('autores');
+                // Create a new term.
+                $author_term = \Drupal\taxonomy\Entity\Term::create([
+                    'vid' => $vocabulary->id(),
+                    'name' => $author,
+                ]);
+                // Save the term.
+                $author_term->save();
+           
+            // Get the term ID.
+            $author_term_id = $author_term->id();
+            }
         $num_paginas = $content['num_paginas'];
         $editorial_geslib_id = $content['editorial'];
         $book_name = $content['description'];
@@ -275,6 +295,8 @@ class GeslibApiDrupalManager {
             $product = $product_storage->create([
               'type' => 'default',
               'title' => $book_name,
+              'field_ean' => $ean,
+              ''
             ]);
     
             $variation = $variation_storage->create([
@@ -289,13 +311,14 @@ class GeslibApiDrupalManager {
     
         // Set or update product data
         $product->set('body', ['value' => $book_description, 'format' => 'full_html']); // or whatever text format you like
-        $variation->set('field_ean', $ean);
-        $variation->set('field_autor', $author);
-        $variation->set('field_num_paginas', $num_paginas);
+        $product->set('field_ean', $ean);
+        if(null !== $author) 
+            $product->get('field_autor')->setValue($author_term_id);
+        $product->set('field_num_paginas', $num_paginas);
     
         // Save the product variation and product to the database
         if ($editorial_geslib_id) {
-            $variation->set('field_editorial', ['target_id' => $editorial_geslib_id]);
+            $product->set('field_editorial', ['target_id' => $editorial_geslib_id]);
         }
         if (!empty($content['categories'])) {
             $category_ids = [];
@@ -303,7 +326,7 @@ class GeslibApiDrupalManager {
                 $category_id = intval($key);
                 $category_ids[] = $category_id;
             }
-            $variation->set('field_categoria', ['target_id' => $category_ids]);
+            $product->set('field_categoria', ['target_id' => $category_ids]);
         }
         $variation->save();
         $product->save();
@@ -314,8 +337,8 @@ class GeslibApiDrupalManager {
     
         // Assign categories
        
-    
-        return $product->id();
+        //$this->output->writeln("Stored Product - Title: $book_name, EAN: $ean");
+        return $product;
     }
     
     private function _create_slug($term_name) {

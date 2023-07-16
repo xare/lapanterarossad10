@@ -1,0 +1,25 @@
+{#
+/**
+ * Default theme implementation for Views to output a LPR VIEW archive.
+ *
+ * Available variables:
+ * - options: View plugin style options:
+ *   - classes: CSS classes.
+ *   - path: Link path. Eg.: example.com/LPR/2016/03
+ *
+ * @see template_preprocess_views_view_lpr_shop_view()
+ *
+ * @ingroup themeable
+ */
+#}
+{%
+  set classes = [
+    'views-view-lpr-shop-view',
+    options.classes
+  ]
+%}
+<div{{ attributes.addClass(classes) }}>
+{{content}}
+
+
+</div>

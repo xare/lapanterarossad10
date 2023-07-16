@@ -23,13 +23,8 @@
  * @ingroup themeable
  */
 #}
-<article{{ attributes }}>
-      {{ title_prefix }}
-      {{ title_suffix }}
- <!-- marcador 1 -->
-      <h3>{{- product.title -}}</h3>
-    {{- product|without('variation_attributes') -}}
-    {# {{- product -}} #}
-   <!-- marcador 2 -->
-   <br /><br />
-</article>
+{{ product.title }}
+<img src="{{ file_url(product.variations[0].field_portada.entity.uri.value) }}" alt="{{ product.variations[0].field_portada.alt }}" />
+{{ product.variations[0].field_author.entity.title.value }}
+{{ product.variations[0].field_precio.entity.title.value }}
+

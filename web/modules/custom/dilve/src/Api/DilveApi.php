@@ -267,6 +267,12 @@ class DilveApi {
 			}
 		} catch (RequestException $e) {
 			\Drupal::logger('dilve')->error($e->getMessage());
+		} catch (ConnectException $e) {
+			\Drupal::logger('dilve')->error('ConnectException: ' . $e->getMessage());
+			return NULL;
+		} catch (RequestException $e) {
+			\Drupal::logger('dilve')->error('RequestException: ' . $e->getMessage());
+			return NULL;
 		}
 	}
 

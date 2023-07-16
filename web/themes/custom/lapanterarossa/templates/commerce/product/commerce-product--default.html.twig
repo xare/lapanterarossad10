@@ -23,13 +23,27 @@
  * @ingroup themeable
  */
 #}
-<article{{ attributes }}>
+
+<div class="columns book-detail is-multiline">
+    <div class="column is-3-tablet">
+    LEFT COLUMN
+    
+        {% if product.variation_field_portada %}
+        PORTADA
+        
+            <figure class="cover">
+                <img 
+                    src="{{ file_url(product.variation_field_portada.entity.fileuri) }}" 
+                    alt="{{ product.variation_field_portada.alt }}">
+            </figure>
+        {% endif %}
+    </div>
+  <div class="column is-9-tablet is-7-desktop detail-content">
+    <!-- Product details -->
       {{ title_prefix }}
       {{ title_suffix }}
- <!-- marcador 1 -->
       <h3>{{- product.title -}}</h3>
-    {{- product|without('variation_attributes') -}}
-    {# {{- product -}} #}
-   <!-- marcador 2 -->
-   <br /><br />
-</article>
+      {{- product|without('variation_attributes', 'field_portada') -}}
+    <!-- Any other fields you want to display -->
+  </div>
+</div>
