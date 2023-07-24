@@ -4,7 +4,7 @@
  */
 
 .field__label {
-    font-weight: bold;
+    /* font-weight: bold; */
 }
 
 .field--label-inline .field__label,

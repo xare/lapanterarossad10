@@ -34,35 +34,30 @@ class DilveScanProductsCommand extends DrushCommands {
 
     public function scanProducts() {
         $start = 0;
-        $limit = 50; //number of products to process at a time.
+        $limit = 100; //number of products to process at a time.
         
         while ($products = $this->drupal->fetchAllProducts($start, $limit)){
             $this->logger->notice('Processed ' . count($products) . ' products.');
             $this->output()->writeln('Processed ' . count($products) . ' products.');
             foreach($products as $product){
-                $variations = $product->get('variations')->referencedEntities();
-                if (!empty($variations)) {
-                    $variation = reset($variations);  // Get the first variation.
-                    if (!$variation->get('field_ean')->isEmpty()) {
-                        $ean = $variation->get('field_ean')->value;
-                        $book = $this->dilveApi->search($ean);
-                        if($book && isset($book['cover_url'])) {
-                            $file = $this->dilveApi->create_cover($book['cover_url'],$ean.'.jpg');
-                            if ( $file  ) {
-                                $this->dilveApi->set_featured_image_for_product( $file, $ean);
-                                $this->output()->writeln( 'Success to create cover image for EAN: ' . $ean );
-                            } else {
-                                \Drupal::messenger()->addError( 'Failed to create cover image for EAN: ' . $ean );
-                                $this->output()->writeln( 'Failed to create cover image for EAN: ' . $ean );
-                            }
+                $ean = $product->get('field_ean')->value;
+                if($ean){
+                    $book = $this->dilveApi->search($ean);
+                    if($book && isset($book['cover_url'])) {
+                        $file = $this->dilveApi->create_cover($book['cover_url'],$ean.'.jpg');
+                        if ( $file  ) {
+                            $this->dilveApi->set_featured_image_for_product( $file, $ean);
+                            $this->output()->writeln( 'Success to create cover image for EAN: ' . $ean );
+                        } else {
+                            \Drupal::messenger()->addError( 'Failed to create cover image for EAN: ' . $ean );
+                            $this->output()->writeln( 'Failed to create cover image for EAN: ' . $ean );
                         }
-                        $this->output()->writeln('EAN: ' . $ean);
-                    } else {
-                        $this->output()->writeln('No EAN set for product variation ID: ' . $variation->id());
                     }
+                    $this->output()->writeln('EAN: ' . $ean);
                 } else {
-                    $this->output()->writeln('No variations available for product ID: ' . $product->id());
+                    $this->output()->writeln('No EAN set for product variation ID: ' . $product->id());
                 }
+                
             }
             // Increment the starting position for the next batch.
             $start += $limit;

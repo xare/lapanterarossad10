@@ -137,7 +137,7 @@ class GeslibApiLines {
 		var_dump( $filename );
 		$log_id = $this->drupal->getLogId( $filename );
 		// 2. Read the file and store in lines table
-		$this->readFile($this->mainFolderPath.$filename, $log_id);
+		return $this->readFile($this->mainFolderPath.$filename, $log_id);
 	}
 	
 	private function readFile($path, $log_id) {
@@ -151,12 +151,10 @@ class GeslibApiLines {
 				$function_name = 'process' . $data[0];
 				if (method_exists($this, $function_name)) {
 					$this->{$function_name}($data, $log_id);
-					$i++;
-				} else {
-					// Handle unexpected values for $datos[0] if needed.
 				}
 			}
-		  }
+		}
+		return 'File '.$path.' has been read';
 	}
 	
 	private function processGP4($data, $log_id) {
@@ -183,7 +181,8 @@ class GeslibApiLines {
 		$geslib_id = $data[1];
 		$content_array['sinopsis'] = $data[3];
 		$content_array = $this->geslibApiSanitize->sanitize_content_array($content_array);
-		$this->mergeContent($geslib_id, $content_array, 'product');
+		
+		return $this->mergeContent($geslib_id, $content_array, 'product');
 	}
 
 	private function process6TE($data, $log_id) {
@@ -256,26 +255,31 @@ class GeslibApiLines {
 		$this->drupal->insert2GeslibLines( $data_array );
 	}
 
-	private function mergeContent( $geslib_id, $content_array, $type ) {
+	private function mergeContent( $geslib_id, $new_content_array, $type ) {
 		
 		//this function is called when the product has been created but we need to add more data to its content json string
 		
 		//1. Get the content given the $geslib_id
-		$result = $this->drupal->fetchContent( $geslib_id, $type );
-		
-		if( $result ){
-			$existing_content = json_decode( $result, true);
-			if(isset($existing_content['categories']) && count($content_array['categories']) > 0) {	
-				array_push( $existing_content['categories'], $content_array['categories'] );
-				$content_array = $existing_content;
-			} else {
-				$content_array = array_merge( $existing_content, $content_array );
+		$original_content = $this->drupal->fetchContent( $geslib_id, $type );
+		if( $original_content ){
+			$original_content_array = json_decode( $original_content, true);
+			// Merge 'categories' if set
+			if ( 
+				isset($original_content_array['categories']) && 
+				isset($new_content_array['categories'])) {
+					$original_content_array['categories'] = array_merge( $original_content_array['categories'], $new_content_array['categories'] );
+			} elseif (isset($new_content_array['categories'])) {
+				$original_content_array['categories'] = $new_content_array['categories'];
 			}
-		}
-		$content = json_encode($content_array);
-		if ( $result ) {
+
+			if ( !isset($original_content_array['sinopsis']) 
+			&& isset($new_content_array['sinopsis'])) {
+				$original_content_array['sinopsis'] = $new_content_array['sinopsis'];
+			}
+
+			$content = json_encode($original_content_array);
 			// update
-			$this->drupal->updateGeslibLines($geslib_id, $type, $content);
+			return $this->drupal->updateGeslibLines($geslib_id, $type, $content);
 		} else {
 			return "error";
 		}

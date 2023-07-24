@@ -42,3 +42,8 @@ services:
     arguments: ['@logger.factory']
     tags:
       - { name: drush.command }
+  geslib.deleteTaxonomy:
+    class: Drupal\geslib\Command\GeslibDeleteTaxonomyCommand
+    arguments: ['@logger.factory']
+    tags:
+      - { name: drush.command }

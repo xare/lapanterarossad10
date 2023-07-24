@@ -78,10 +78,10 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
                 $variation_id = $product->getDefaultVariation()->id();
                 $variation = $variation_storage->load($variation_id);
                 $product->delete();
-                $context['message'] = dt('Deleting product @title with EAN: @ean.', 
+                $context['message'] = dt('Deleting product @title ', 
                                         [
                                             '@title' => $product->get('title')->value,
-                                            '@ean' => $variation->get('field_ean')->value,
+                                            //'@ean' => $variation->get('field_ean')->value,
                                         ]);
             }
         }

@@ -1,0 +1,7 @@
+opening.library_opening_exceptions:
+  type: config_object
+  label: 'Library Opening Exceptions'
+  mapping:
+    exceptions:
+      type: string
+      label: 'Library Opening Exceptions'

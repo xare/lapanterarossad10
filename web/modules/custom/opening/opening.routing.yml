@@ -1,0 +1,7 @@
+opening.library_opening_exceptions_form:
+  path: '/admin/config/opening/exceptions'
+  defaults:
+    _form: '\Drupal\opening\Form\LibraryOpeningExceptionsForm'
+    _title: 'Library Opening Exceptions'
+  requirements:
+    _permission: 'administer site configuration'

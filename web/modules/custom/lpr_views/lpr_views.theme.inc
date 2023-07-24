@@ -9,4 +9,3 @@ function template_preprocess_views_view_lpr_views(&$variables) {
   $options = $variables['view']->style_plugin->options;
   $variables['options'] = $options;
 }
-

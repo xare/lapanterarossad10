@@ -1,0 +1,6 @@
+opening.library_opening_exceptions_form:
+  title: 'Library Opening Exceptions'
+  parent: system.admin_config
+  route_name: opening.library_opening_exceptions_form
+  description: 'Configure library opening exceptions'
+  weight: 100

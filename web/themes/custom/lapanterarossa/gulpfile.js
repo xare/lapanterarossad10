@@ -9,6 +9,12 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var uglify = require('gulp-uglify');
 var browserSync = require('browser-sync').create();
+var imagemin;
+
+import('gulp-imagemin').then((module) => {
+  imagemin = module.default;
+});
+
 
 var projectURL = 'http://lapanterarossa';
 
@@ -39,6 +45,12 @@ var htmlFile = 'index.html';
 var styleWatch = './assets/scss/**/*.scss';
 var jsWatch = './assets/js/**/*.js';
 var phpWatch = '**/*.php';
+
+var imgSrc = './images/**/*';
+var imgDest = './dist/images/';
+
+var fontsSRC = './fonts/*';
+var fontsDEST = './dist/fonts/';
 
 function style() {
     // compile
@@ -100,16 +112,30 @@ function browsersyncReload(cb) {
     browserSync.reload();
     cb();
 }
+async function images() {
+    return src( imgSrc )
+        .pipe( await imagemin() )
+        .pipe( dest( imgDest ) );
+}
 
+function fonts() {
+    console.log("Running the fonts task...");
+    return src( fontsSRC )
+        .pipe(dest( fontsDEST ) );
+}
 
 function watchTask() {
-    //watch(htmlWatch, browsersyncReload);
     watch(phpWatch, browsersyncReload);
-    watch([styleWatch, jsWatch], series(style, js, browsersyncReload));
+    watch([styleWatch, jsWatch], series(style, js, images, fonts, browsersyncReload));
+    watch(imgSrc, series(images, browsersyncReload));
 }
+
+
 exports.default = series(
     style,
     js,
+    fonts,
     browserSyncServe,
-    watchTask
+    watchTask,
+    images,
 );

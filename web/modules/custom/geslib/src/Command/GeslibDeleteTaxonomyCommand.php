@@ -33,7 +33,7 @@ class GeslibDeleteTaxonomyCommand extends DrushCommands {
         }
 
         foreach ($terms as $term) {
-            $term = Term::load($term->tid);
+            $this->output->writeln(dt('Term Deleted: @termId - @termName',['@termId' => $term->id, '@termName' => $term->description]));
             $term->delete();
         }
 

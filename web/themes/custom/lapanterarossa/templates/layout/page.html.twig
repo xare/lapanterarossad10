@@ -43,13 +43,14 @@
  */
 #}
 {# <div class="layout-container"> #}
-{% if page.secondary_menu %}
+{% if page.top_start or page.top_end %}
   <nav class="navbar navbar-top">
     {# <div class="container is-max-desktop"> #}
       <div class="navbar-start is-hidden-touch">
+      {{ page.top_start }}
       </div><!-- /navbar-start-->
       <div class="navbar-end">
-        {{ page.secondary_menu }}
+        {{ page.top_end }}
       </div><!-- /navbar-end-->
     {# </div> #}
   </nav>
@@ -112,20 +113,28 @@
   <div class="container is-max-desktop">
     {{ page.breadcrumb }}
 
-    {{ page.highlighted }}
+    
 
     {{ page.help }}
   </div>
 
-  <main role="main">
-    <div class="container is-max-desktop">
+  <main class="main">
+  {{ page.highlighted }}
+    {# <div class="container is-max-desktop">
       <div class="columns">
-        <a id="main-content" tabindex="-1"></a>{# link is in html.html.twig #}
+        <a id="main-content" tabindex="-1"></a> #}{# link is in html.html.twig #}
 
-        <div class="layout-content column">
+        {# <div class="layout-content column"> #}
           {{ page.content }}
-        </div>{# /.layout-content #}
-
+        {# </div> #}{# /.layout-content #}
+        {% if page.boletin %}
+            {{ page.boletin }}
+        {% endif %}
+        {% if page.faldon %}
+          <section class="section contact">
+            {{ page.faldon }}
+          </section>
+        {% endif %}
         {% if page.sidebar_first %}
           <aside class="layout-sidebar-first column is-one-third" role="complementary">
             {{ page.sidebar_first }}
@@ -137,8 +146,8 @@
             {{ page.sidebar_second }}
           </aside>
         {% endif %}
-      </div>
-    </div>
+      {# </div>
+    </div> #}
   </main>
 
   {% if (page.footer_left or page.footer_center or page.footer_right) %}

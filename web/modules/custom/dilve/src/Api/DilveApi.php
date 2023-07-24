@@ -277,17 +277,17 @@ class DilveApi {
 	}
 
   	function set_featured_image_for_product(File $file, $ean) {
-		$query = \Drupal::entityQuery('commerce_product_variation')
+		$query = \Drupal::entityQuery('commerce_product')
 			->condition('field_ean.value', $ean)
 			->accessCheck(FALSE);
 
-		$variation_ids = $query->execute();
+		$product_ids = $query->execute();
 
-		foreach ($variation_ids as $variation_id) {
-			$variation = \Drupal\commerce_product\Entity\ProductVariation::load($variation_id);
-			$variation->set('field_portada', ['target_id' => $file->id()]);
-			$variation->save();
-			\Drupal::service('file.usage')->add($file, 'dilve', 'node', $variation_id);
+		foreach ($product_ids as $product_id) {
+			$product = \Drupal\commerce_product\Entity\Product::load($product_id);
+			$product->set('field_portada', ['target_id' => $file->id()]);
+			$product->save();
+			\Drupal::service('file.usage')->add($file, 'dilve', 'node', $product_id);
 		}
 	}
 

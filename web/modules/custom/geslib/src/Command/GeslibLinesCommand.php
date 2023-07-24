@@ -37,7 +37,7 @@ class GeslibLinesCommand extends DrushCommands {
         $geslibApiLog = new GeslibApiLog($this->logger_factory);
         $geslibApiLines = new GeslibApiLines($this->logger_factory);
         $geslibApiDb = new GeslibApiDrupalManager($this->logger_factory);
-        $geslibApiLines->storeToLines();
+        $this->output()->writeln($geslibApiLines->storeToLines());
 
         $this->output()->writeln('Geslib Lines: The data has been loaded to geslib_lines');
     }

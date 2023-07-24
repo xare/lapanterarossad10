@@ -26,24 +26,48 @@
 
 <div class="columns book-detail is-multiline">
     <div class="column is-3-tablet">
-    LEFT COLUMN
-    
-        {% if product.variation_field_portada %}
-        PORTADA
-        
-            <figure class="cover">
-                <img 
-                    src="{{ file_url(product.variation_field_portada.entity.fileuri) }}" 
-                    alt="{{ product.variation_field_portada.alt }}">
-            </figure>
+        {% if product.field_portada %}
+          <figure class="cover">
+            {{ product.field_portada }}
+          </figure>
         {% endif %}
     </div>
   <div class="column is-9-tablet is-7-desktop detail-content">
     <!-- Product details -->
       {{ title_prefix }}
       {{ title_suffix }}
-      <h3>{{- product.title -}}</h3>
-      {{- product|without('variation_attributes', 'field_portada') -}}
+      {# <h3>{{- product.title -}}</h3> #}
+      {# {{- product|without('variation_attributes', 'field_portada', 'title') -}} #}
+
+        <h1>{{ product.title }}</h1>
+        {{ product.field_autor }}
+        
+        {{ product.variation_price }}
+        {# {{dump( product.variations )}} #}
+        {{product.variations}}
+        {# {% for product.variations as variation %}
+          {{ variation }}
+        {% endfor %} #}
+       {#  {% if product.variation_form %}
+          {{ product.variation_form }}
+        {% else %}
+          <form class="commerce-add-to-cart" id="commerce-add-to-cart--{{ product.id }}" accept-charset="UTF-8" method="post" {{ product.attributes }}>
+            <div class="form-actions">
+              <input class="button" type="submit" value="{{ 'Add to cart'|t }}" />
+            </div>
+          </form>
+        {% endif %} #}
+        {{ product.body }}
     <!-- Any other fields you want to display -->
+  </div>
+  <div class="column is-12-tablet is-2-desktop data-column">
+    <ul class="chips">
+      <li>{{ product.field_category }}</li>
+    </ul>
+    <ul class="book-data">
+      <li>{{ product.field_num_paginas }}</li>
+      <li>{{ product.field_ean }}</li>
+      <li>{{ product.field_editorial }}</li>
+    </ul>
   </div>
 </div>

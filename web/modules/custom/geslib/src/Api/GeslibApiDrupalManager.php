@@ -32,6 +32,7 @@ class GeslibApiDrupalManager {
     private $database;
     private $geslibApiSanitize;
     protected $logger;
+    private $output;
     public function __construct( LoggerChannelFactoryInterface $logger_factory ){
         $this->database = \Drupal::database();
         $this->geslibApiSanitize = new GeslibApiSanitize();
@@ -120,9 +121,11 @@ class GeslibApiDrupalManager {
                 ->update(self::GESLIB_LINES_TABLE)
                 ->fields(['content' => $content])
                 ->condition('geslib_id', $geslib_id, '=')
-                ->condition('entity', $type,'=');
+                ->condition('entity', $type,'=')
+                ->execute();
+                return "The " . $type . " item with geslib_id " . $geslib_id ." has been updated";
 		} catch( \Exception $e ) {
-			echo "Un error ha ocurrido al intentar actualizar la tabla". $wpdb->prefix.self::GESLIB_LINES_TABLE. " :  ".$e->getMessage() ;
+			echo "Un error ha ocurrido al intentar actualizar la tabla". self::GESLIB_LINES_TABLE. " :  ".$e->getMessage() ;
 		}
 	}
 
@@ -224,8 +227,7 @@ class GeslibApiDrupalManager {
               ],
               'geslib_id' => $geslib_id, // assuming field_geslib_id is your custom field
             ]);
-        }
-        //var_dump($term);    
+        }    
         // Save the term
         $term->save();
         $violations = $term->validate();
@@ -251,30 +253,49 @@ class GeslibApiDrupalManager {
                     ->condition('t.entity','product')
                     ->execute();
         $product_geslib_lines = $query->fetchAll(PDO::FETCH_OBJ);
+        $i = 0;
+        $limit = 100;
 		foreach($product_geslib_lines as $product_geslib_line) {
-			$this->storeProduct($product_geslib_line->geslib_id, $product_geslib_line->content);
-            
+            if( $i < $limit )
+			    $this->storeProduct($product_geslib_line->geslib_id, $product_geslib_line->content);
+            else
+                return;
+            $i++;
         }
 	}
     public function storeProduct($geslib_id, $content) {
+        $store = \Drupal::service('commerce_store.default_store_resolver')->resolve();
+        $store_id = $store->id();
 
-        
         $content = json_decode($content, true);
         $ean = $content['ean'];
         $author = $content['author'];
-            if(null !== $author) {
-                $vocabulary = \Drupal\taxonomy\Entity\Vocabulary::load('autores');
+        if(null !== $author) {
+            $vocabulary = \Drupal\taxonomy\Entity\Vocabulary::load('autores');
+            
+            // Assuming $vocabulary is your Vocabulary object and $author is the term name you want to check.
+            $term_exists = \Drupal::entityQuery('taxonomy_term')
+                            ->condition('vid', $vocabulary->id())
+                            ->condition('name', $author)
+                            ->accessCheck(FALSE)
+                            ->execute();
+            if (empty($term_exists)) {
                 // Create a new term.
                 $author_term = \Drupal\taxonomy\Entity\Term::create([
-                    'vid' => $vocabulary->id(),
-                    'name' => $author,
-                ]);
+                                    'vid' => $vocabulary->id(),
+                                    'name' => $author,
+                                ]);
                 // Save the term.
                 $author_term->save();
-           
+            } else {
+                $author_term = Term::load(reset($term_exists));
+            }
+        
             // Get the term ID.
             $author_term_id = $author_term->id();
-            }
+            var_dump($author_term_id);
+        }
+
         $num_paginas = $content['num_paginas'];
         $editorial_geslib_id = $content['editorial'];
         $book_name = $content['description'];
@@ -294,9 +315,9 @@ class GeslibApiDrupalManager {
             // If product does not exist, create a new instance of Product and ProductVariation
             $product = $product_storage->create([
               'type' => 'default',
+              'stores' => [$store],
               'title' => $book_name,
               'field_ean' => $ean,
-              ''
             ]);
     
             $variation = $variation_storage->create([
@@ -310,27 +331,37 @@ class GeslibApiDrupalManager {
         }
     
         // Set or update product data
-        $product->set('body', ['value' => $book_description, 'format' => 'full_html']); // or whatever text format you like
+        $product->set('body', [
+                                'value' => $book_description, 
+                                'format' => 'full_html']); 
+                                // or whatever text format you like
         $product->set('field_ean', $ean);
-        if(null !== $author) 
+
+        if(null !== $author && null !== $author_term_id) 
             $product->get('field_autor')->setValue($author_term_id);
+
         $product->set('field_num_paginas', $num_paginas);
     
         // Save the product variation and product to the database
-        if ($editorial_geslib_id) {
-            $product->set('field_editorial', ['target_id' => $editorial_geslib_id]);
+        if (null !== $editorial_geslib_id) {
+            $product->set('field_editorial', [
+                                                'target_id' => $editorial_geslib_id]);
         }
+
         if (!empty($content['categories'])) {
             $category_ids = [];
             foreach ($content['categories'] as $key => $value) {
                 $category_id = intval($key);
+                var_dump("Key: $key, Category ID: $category_id"); // Add this line to check values
                 $category_ids[] = $category_id;
             }
-            $product->set('field_categoria', ['target_id' => $category_ids]);
+
+            $product->set('field_categoria', $category_ids);
         }
+
         $variation->save();
         $product->save();
-    
+
         // Assign the product to the editorial taxonomy term
         // This assumes that the taxonomy term ID is stored in $editorial_geslib_id, adjust if needed
         

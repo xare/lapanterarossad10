@@ -12,12 +12,18 @@
  * @see template_preprocess_region()
  */
 #}
-{%
+{# {%
   set classes = [
     'region',
     'region-' ~ region|clean_class,
     'is-right',
-  ]
+  ] 
+%} #}
+
+{%
+  set classes = [
+    'navbar-item'
+  ] 
 %}
 {% if content %}
   <div{{ attributes.addClass(classes) }}>

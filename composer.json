@@ -25,6 +25,8 @@
         "drupal/devel": "^5.1",
         "drupal/migrate_plus": "6.0",
         "drupal/migrate_tools": "6.0",
+        "drupal/search_api": "^1.29",
+        "drupal/selective_better_exposed_filters": "^3.0@beta",
         "drush/drush": "^11.6",
         "kint-php/kint": "^5.0"
     },

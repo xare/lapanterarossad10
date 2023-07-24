@@ -1,0 +1,8 @@
+name: 'Opening'
+type: module
+description: 'Displays a block with the opening hours of the library."'
+package: Custom
+core_version_requirement: ^8 || ^9 || ^10
+version: 1.0
+dependencies:
+  - config
