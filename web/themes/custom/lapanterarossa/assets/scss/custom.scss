@@ -94,3 +94,82 @@ border-top-right-radius: 12px;
 @import "modules/components";
 @import "modules/cards";
 @import "modules/tables";
+
+
+/* COMMERCE CHECKOUT STEPS */
+
+.checkout-progress--step::before {
+    content: "" !important;
+}
+
+fieldset[data-drupal-selector="edit-payment-information"] {
+    margin-top: 0 !important;
+}
+
+.table-cart .form-item {
+    margin-bottom:0;
+}
+
+//CUSTOM STYLES FOR WEBFORM BUTTONS
+
+.webform-custom-options-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -5px;
+  }
+  
+  .webform-custom-options-button {
+    flex: 1;
+    display: table-cell;
+    margin: 0 5px 10px 5px;
+    border: 3px solid #ccc;
+    border-radius: 3px;
+    background-color: #fff;
+    padding: 10px;
+    vertical-align: middle;
+    text-align: center;
+    color: #666;
+  }
+  
+  .webform-custom-options-button .description {
+    font-size: .8em;
+  }
+  
+  .webform-custom-options-button[data-option-value]:hover {
+    border-color: #999;
+    color: #333;
+  }
+  
+  .webform-custom-options-button[data-option-value]:focus {
+    border-color: #999;
+    color: #333;
+  }
+  
+  .webform-custom-options-button[data-option-value][aria-checked=true] {
+    border-color: #0074bd;
+    color: #000;
+  }
+  
+  .webform-custom-options-button[data-option-value][aria-checked=true]:focus {
+    box-shadow: 0 0 5px #0074bd;
+  }
+  
+  .webform-custom-options-button[data-option-value][aria-disabled=true],
+  .webform-custom-options-button[data-option-value][aria-disabled=true]:hover,
+  .webform-custom-options-button[data-option-value][aria-disabled=true]:focus {
+    cursor: not-allowed;
+    border-color: #ccc;
+    color: #999;
+  }
+  
+  @media (max-width: 600px) {
+    .webform-custom-options-buttons {
+      display: block;
+      margin: 0;
+    }
+  
+    .webform-custom-options-button {
+      display: block;
+      margin: 5px 0;
+    }
+  }

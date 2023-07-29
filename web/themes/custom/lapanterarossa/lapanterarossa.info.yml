@@ -44,4 +44,6 @@ regions:
   top_end: 'Top End'
   faldon: 'Faldón'
   boletin: 'Boletín'
+  colabora_left: 'Colabora Left'
+  colabora_right: 'Colabora Right'
 logo: logo.svg
