@@ -1,0 +1,6 @@
+name: Path Replacer
+type: module
+description: 'A custom module to replace file paths in content.'
+package: Custom
+version: 1.0
+core_version_requirement: ^8 || ^9 || ^10

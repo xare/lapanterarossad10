@@ -49,20 +49,22 @@ protected function isLibraryOpen($current_time) {
     $current_date = \Drupal::time()->getCurrentTime();
   
     // Convert the current date to the desired format.
-    $current_date_formatted = \Drupal::service('date.formatter')->format($current_date, 'custom', 'Y-m-d');
-  
+    $current_date_formatted = \Drupal::service('date.formatter')->format($current_date, 'custom', 'd-m');
+    
     // Get the library opening exceptions from the configuration.
     $config = \Drupal::config('opening.library_opening_exceptions');
-    $exceptions = $config->get('exceptions');
-
+    
     // Check if the current date is an exception.
-    if (strpos($exceptions, $current_date_formatted) !== false) {
+    if (strpos($config->get('exceptions'), $current_date_formatted) !== false) {
         return false;
     }
+
+    $exceptions = preg_split('/\s+/', $config->get('exceptions'));
+    
     // Check if the current day is an exception.
-    foreach ($exceptions as $exception) {
-      if ($exception['day'] == $current_date_formatted) {
-        return $exception['open'];
+    foreach ( $exceptions as $exception ) {
+      if ( $exception == $current_date_formatted ) {
+        return false;
       }
     }
   

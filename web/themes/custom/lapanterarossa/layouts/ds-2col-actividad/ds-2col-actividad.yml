@@ -1,0 +1,13 @@
+name: 2 column layout for Actividad
+type: layout
+description: 'Defines a layout for the "actividad" content type using 2 columns.'
+category: My Custom Layouts
+template: layouts/ds-2col-actividad
+library: lapanterarossa/ds-2col-actividad
+icon_map:
+  - ['left', 'right']
+regions:
+  left:
+    label: Left
+  right:
+    label: Right

@@ -120,13 +120,17 @@
 
   <main class="main">
   {{ page.highlighted }}
-    {# <div class="container is-max-desktop">
-      <div class="columns">
-        <a id="main-content" tabindex="-1"></a> #}{# link is in html.html.twig #}
-
-        {# <div class="layout-content column"> #}
-          {{ page.content }}
-        {# </div> #}{# /.layout-content #}
+  {% if page.previo_content %}
+          <section class="section pt-2">
+            <div class="container is-max-desktop">
+              <div class="columns">
+                <div class="layout-content column">
+                  {{ page.previo_content }}
+                </div>
+              </div>
+            </div>
+          </section>
+        {% endif %}
         <!-- COLABORA -->
         {% if page.colabora_left and page.colabora_right %}
           <section class="section pt-2">

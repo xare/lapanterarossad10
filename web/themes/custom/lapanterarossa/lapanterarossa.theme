@@ -96,6 +96,65 @@ function lapanterarossa_theme_suggestions_page_alter(array &$suggestions, array 
     // Add a menu suggestion to disable BigPipe for this page.
     $suggestions[] = 'page__colabora_bono__no_big_pipe';
   }
+  // Add content type suggestions.
+  if ($node = \Drupal::routeMatch()->getParameter('node')) {
+    array_splice($suggestions, 1, 0, 'page__node__' . $node->getType());
+  }
 }
 
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function lapanterarossa_theme_registry_alter(&$theme_registry) {
+  if (isset($theme_registry['ds_2col_fluid'])) {
+    $theme_registry['ds_2col_fluid']['template'] = 'layout/ds-2col-fluid';
+  }
+}
 
+/**
+ * Implements hook_preprocess_HOOK() for time.html.twig.
+ */
+function lapanterarossa_preprocess_field(&$variables) {
+  // Get the field name from variables.
+  //error_log('Preprocessing field: ' . $variables['element']['#field_name']);
+  $field_name = $variables['element']['#field_name'];
+  // Check for field name and bundle (content type).
+  if ($field_name == 'field_act_fecha_final' && $variables['element']['#bundle'] == 'actividad') {
+    // Create a DateTime object from the attribute
+    $date = new \DateTime($variables['items'][0]['content']['#text']);
+    
+    // Format the date and time as desired
+    $variables['day'] = $date->format('j');
+    $variables['month'] = $date->format('F');
+    $variables['time'] = $date->format('H:i');
+    $variables['day_of_week'] = $date->format('l');
+   
+    // Convert month and day_of_week to Spanish (you may want to handle other languages differently)
+    $months = [
+      'January' => 'Enero', 
+      'February' => 'Febrero',
+      'March' => 'Marzo',
+      'April' => 'Abril',
+      'May' => 'Mayo',
+      'June' => 'Junio',
+      'July' => 'Julio',
+      'August' => 'Agosto',
+      'September' => 'Septiembre',
+      'October' => 'Octubre',
+      'November' => 'Noviembre',
+      'December' => 'Diciembre',
+    ];
+    $days_of_week = [
+      'Monday' => 'Lunes', 
+      'Tuesday' => 'Martes',
+      'Wednesday' => 'Miércoles',
+      'Thursday' => 'Jueves',
+      'Friday' => 'Viernes',
+      'Saturday' => 'Sábado',
+      'Sunday' => 'Domingo',
+    ];
+
+    $variables['month'] = $months[$variables['month']] ?? $variables['month'];
+    $variables['day_of_week'] = $days_of_week[$variables['day_of_week']] ?? $variables['day_of_week'];
+  }
+}

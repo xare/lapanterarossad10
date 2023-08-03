@@ -1,0 +1,9 @@
+name: 'My Custom Map Module'
+type: module
+description: 'Displays a map with a pointer to a given address.'
+package: 'Custom'
+version: '1.0'
+core_version_requirement: '^8 || ^9 || ^10'
+dependencies:
+  - geocoder
+  - leaflet

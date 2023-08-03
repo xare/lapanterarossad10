@@ -1,0 +1,14 @@
+name: 'COOKiES'
+type: module
+description: 'User consent management tool using library cookiesJSR.'
+core_version_requirement: ^8.9 || ^9 || ^10
+package: 'COOKiES'
+configure: cookies.config
+dependencies:
+  - drupal:config_translation
+  - drupal:block
+
+# Information added by Drupal.org packaging script on 2023-05-31
+version: '1.2.3'
+project: 'cookies'
+datestamp: 1685533293

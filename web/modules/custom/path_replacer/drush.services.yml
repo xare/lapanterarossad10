@@ -1,0 +1,6 @@
+services:
+  path_replacer.replace-url:
+    class: Drupal\path_replacer\Command\pathReplacerCommand
+    arguments: ['@database']
+    tags:
+      - { name: drush.command }

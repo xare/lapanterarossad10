@@ -1,0 +1,5 @@
+services:
+  remove_empty_files.check-files:
+    class: Drupal\remove_empty_files\Command\RemoveEmptyFilesCommands
+    tags:
+      - { name: drush.command }

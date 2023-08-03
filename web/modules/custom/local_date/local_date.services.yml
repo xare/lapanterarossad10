@@ -1,0 +1,5 @@
+services:
+  local_date.twig_extension:
+    class: Drupal\local_date\TwigExtension\LocalDateTwigExtension
+    tags:
+      - { name: twig.extension }

@@ -57,7 +57,7 @@ class LibraryOpeningExceptionsForm extends ConfigFormBase {
     $exceptions_array = array_filter($exceptions_array);
 
     // Store the exceptions array in the configuration.
-    $this->config('hello_world.library_opening_exceptions')
+    $this->config('opening.library_opening_exceptions')
       ->set('exceptions', $exceptions_array)
       ->save();
 

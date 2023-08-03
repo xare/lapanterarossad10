@@ -30,10 +30,7 @@ var mapURL = '../maps';
 
 var jsSRC = './assets/js/';
 var jsAdmin = 'custom.js';
-/* var jsForm = 'form.js';
-var jsSlider = 'slider.js';
-var jsAuth = 'auth.js' */
-//var jsFiles = [jsAdmin, jsForm, jsSlider, jsAuth];
+
 var jsFiles = [jsAdmin];
 var jsURL = './dist/js/';
 var jsFolder = 'assets/js/';

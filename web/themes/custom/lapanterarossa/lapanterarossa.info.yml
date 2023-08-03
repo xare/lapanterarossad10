@@ -28,6 +28,7 @@ regions:
   secondary_menu: 'Secondary menu'
   highlighted: 'Highlighted'
   help: 'Help'
+  previo_content: 'Previo content'
   content: 'Content'
   sidebar_first: 'Left sidebar'
   sidebar_second: 'Right sidebar'

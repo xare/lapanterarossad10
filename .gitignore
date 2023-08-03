@@ -45,3 +45,4 @@
 /web/update.php
 /web/web.config
 /web/themes/custom/*/node_modules
+/db

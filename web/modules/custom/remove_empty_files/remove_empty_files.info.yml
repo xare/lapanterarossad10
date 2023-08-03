@@ -1,0 +1,6 @@
+name: Remove empty files
+type: module
+description: 'A custom module to remove file tables row in my legacy database drupal6 table in base of empty paths.'
+package: Custom
+version: 1.0
+core_version_requirement: ^8 || ^9 || ^10
