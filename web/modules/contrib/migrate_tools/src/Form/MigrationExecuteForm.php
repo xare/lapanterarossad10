@@ -220,7 +220,7 @@ class MigrationExecuteForm extends FormBase {
             $this->messenger()->addStatus($this->t('Rollback completed', ['@id' => $migration_id]));
           }
           else {
-            $this->messenger()->addError($this->t('Rollback of !name migration failed.', ['!name' => $migration_id]));
+            $this->messenger()->addError($this->t('Rollback of @name migration failed.', ['@name' => $migration_id]));
           }
           break;
 
