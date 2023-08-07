@@ -31,22 +31,16 @@
     'block',
     'block-' ~ configuration.provider|clean_class,
     'block-' ~ plugin_id|clean_class,
+    'columns is-vcentered is-reversed-tablet',
   ]
 %}
-{# <div{{ attributes.addClass(classes) }}> #}
-<section class="section">
-    <div class="container">
-        {{ title_prefix }}
-        {% if label %}
-            <h2{{ title_attributes }}>{{ label }}</h2>
-        {% endif %}
-        {{ title_suffix }}
-        {% if is_front %}
-          <h1>Acción Rossa</h1>
-        {% endif %}
-        {% block content %}
-            {{ content }}
-        {% endblock %}        
-    </div>
-</section>
-{# </div> #}
+<div{{ attributes.addClass(classes) }}>
+  {{ title_prefix }}
+  {% if label %}
+    <h2{{ title_attributes }}>{{ label }}</h2>
+  {% endif %}
+  {{ title_suffix }}
+  {% block content %}
+    {{ content }}
+  {% endblock %}
+</div>

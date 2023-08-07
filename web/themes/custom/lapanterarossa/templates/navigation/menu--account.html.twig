@@ -28,35 +28,43 @@
 
 {% macro menu_links(items, attributes, menu_level) %}
   {% import _self as menus %}
+  {# {{dump(items)}} #}
   {% if items %}
-    {% if menu_level == 0 %}
-          {# <div{{ attributes.addClass('menu navbar-item has-dropdown is-hoverable') }}> #}
-    {% else %}
+   {#  {% if menu_level == 0 %}
         {% set classes = [
           'menu',
           'navbar-item',
           'has-dropdown',
           'is-hoverable'
         ] %}
-        {# <div{{ attributes.addClass(classes) }}> #}
-    {% endif %}
-    {% for item in items %}
-      {%
+        {# <div{{ attributes.addClass(classes) }}>
+    {% endif %} #}
+    {%
         set classes = [
           'navbar-item',
-          'menu-item',
-          item.is_expanded ? 'menu-item--expanded',
-          item.is_collapsed ? 'menu-item--collapsed',
-          item.in_active_trail ? 'menu-item--active-trail',
+          'is-user',
+          'is-hidden-touch',
+          'has-dropdown' ,
+          'is-hoverable' ,
         ]
       %}
-      {# <li{{ item.attributes.addClass(classes) }}> #}
-        {{ link(item.title, item.url, {'class' : classes }) }}
-        {% if item.below %}
-          {{ menus.menu_links(item.below, attributes, menu_level + 1) }}
-        {% endif %}
-      {# </li> #}
+    <div class="{{ classes|join(' ') }}">
+          <a href="#" class="navbar-link is-arrowless">
+            <i class="material-symbols-outlined">account_circle</i>
+          </a>
+          <div class="navbar-dropdown is-right">
+    {% for item in items %}   
+              {% if username %}
+                <p class="navbar-item">Hola {{ username }}</p>
+              {% else %}
+                {# {{ link('Login', path('user.login'), {'class' : 'navbar-item' }) }} #}
+              {% endif %}
+              <hr class="navbar-divider">
+              {{ link(item.title, item.url, {'class' : 'navbar-item' }) }}
+              {# <hr class="navbar-divider">
+              {# {{ menus.menu_links(item.below, attributes, menu_level + 1) }} #}   
     {% endfor %}
-      {# </div> #}
+     </div>
+      </div>
   {% endif %}
 {% endmacro %}

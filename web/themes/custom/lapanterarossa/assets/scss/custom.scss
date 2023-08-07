@@ -96,6 +96,10 @@ border-top-right-radius: 12px;
 @import "modules/tables";
 
 
+h2, h3, p {
+    margin-bottom: 1rem;
+}
+
 /* COMMERCE CHECKOUT STEPS */
 
 .checkout-progress--step::before {

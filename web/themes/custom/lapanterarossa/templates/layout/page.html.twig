@@ -120,6 +120,19 @@
 
   <main class="main">
   {{ page.highlighted }}
+
+   {% if page.previo_content %}
+          <section class="section pt-2">
+            <div class="container is-max-desktop">
+              <div class="columns">
+                <div class="layout-content column">
+                  {{ page.previo_content }}
+                </div>
+              </div>
+            </div>
+          </section>
+        {% endif %}
+        <!-- layout-content -->
     {# <div class="container is-max-desktop">
       <div class="columns">
         <a id="main-content" tabindex="-1"></a> #}{# link is in html.html.twig #}

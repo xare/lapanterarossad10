@@ -197,6 +197,57 @@ class GeslibApiDrupalManager {
       	return $store_data;
     }
 
+    public function storeProductCategories($product_category) {
+        $term_name = $this->geslibApiSanitize->utf8_encode($product_category->content);
+        $term_description = $term_name;
+        $geslib_id = $product_category->geslib_id;
+        // Load the taxonomy term by name from the 'product_categories' vocabulary
+        $terms = \Drupal::entityTypeManager()
+                ->getStorage('taxonomy_term')
+                ->loadByProperties([
+                    'name' => $term_name,
+                    'vid' => 'product_categories',
+                ]);
+    
+        if (empty($terms)) {
+            // Create a new term
+            $term = \Drupal\taxonomy\Entity\Term::create([
+                'name' => $term_name,
+                'vid' => 'product_categories',
+                'description' => [
+                    'value' => 'Imported category',
+                    'format' => 'plain_text',
+                ],
+                // You may need to adjust this if the pathauto module is installed
+                'path' => [
+                    'alias' => '/' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', \Drupal::transliteration()->transliterate($term_name, 'es'))),
+                ],
+                'geslib_id' => $product_category->geslib_id,
+            ]);
+    
+            // Validate the term
+            $violations = $term->validate();
+    
+            if ($violations->count() > 0) {
+                // Handle error here
+                foreach ($violations as $violation) {
+                    \Drupal::messenger()->addError($violation->getMessage());
+                }
+    
+                return null;
+            } else {
+                // Save the term
+                $term->save();
+    
+                return $term;
+            }
+        } else {
+            \Drupal::messenger()->addMessage(t('Category already exists'));
+    
+            return null;
+        }
+    }
+
     public function storeEditorials( $editorial ) {
         $term_name = $this->geslibApiSanitize->utf8_encode($editorial->content);
         $term_description = $term_name;
@@ -344,19 +395,47 @@ class GeslibApiDrupalManager {
     
         // Save the product variation and product to the database
         if (null !== $editorial_geslib_id) {
-            $product->set('field_editorial', [
-                                                'target_id' => $editorial_geslib_id]);
+            // Load the taxonomy terms by the field value of 'geslib_id'.
+            $terms = \Drupal::entityTypeManager()
+                    ->getStorage('taxonomy_term')
+                    ->loadByProperties([
+                        'vid' => 'editorials',
+                        'geslib_id' => $editorial_geslib_id,
+                    ]);
+            if ($terms) {
+                $term = reset($terms);
+                // Make sure we got a Term object before trying to get its ID.
+                if ($term instanceof Term) {
+                    $product->set('field_editorial', [
+                      'target_id' => $term->id(),
+                    ]);
+                  }
+            }
         }
 
         if (!empty($content['categories'])) {
             $category_ids = [];
             foreach ($content['categories'] as $key => $value) {
-                $category_id = intval($key);
-                var_dump("Key: $key, Category ID: $category_id"); // Add this line to check values
-                $category_ids[] = $category_id;
+                $category_geslib_id = intval($key);
+                var_dump("Key: $key, Category ID: $category_geslib_id"); // Add this line to check values
+                // Load the term by the geslib_id field
+                $terms = \Drupal::entityTypeManager()
+                        ->getStorage('taxonomy_term')
+                        ->loadByProperties([
+                            'vid' => 'product_categories',
+                            'geslib_id' => $category_geslib_id
+                        ]);
+                // If the term is found, retrieve its ID and add to the $category_ids array
+                if ($terms) {
+                    $term = reset($terms);  // Since loadByProperties returns an array, just get the first result.
+                    $category_ids[] = $term->id();
+                }
             }
 
-            $product->set('field_categoria', $category_ids);
+            // Set the term IDs for the product
+            if (!empty($category_ids)) {
+                $product->set('field_categoria', $category_ids);
+            }
         }
 
         $variation->save();
@@ -405,55 +484,7 @@ class GeslibApiDrupalManager {
                 ->fetchAll();
     }
 
-    public function storeProductCategories($product_category) {
-        $term_name = $this->geslibApiSanitize->utf8_encode($product_category->content);
     
-        // Load the taxonomy term by name from the 'product_categories' vocabulary
-        $terms = \Drupal::entityTypeManager()
-                ->getStorage('taxonomy_term')
-                ->loadByProperties([
-                    'name' => $term_name,
-                    'vid' => 'product_categories',
-            ]);
-    
-        if (empty($terms)) {
-            // Create a new term
-            $term = \Drupal\taxonomy\Entity\Term::create([
-                'name' => $term_name,
-                'vid' => 'product_categories',
-                'description' => [
-                    'value' => 'Imported category',
-                    'format' => 'plain_text',
-                ],
-                // You may need to adjust this if the pathauto module is installed
-                'path' => [
-                    'alias' => '/' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', \Drupal::transliteration()->transliterate($term_name, 'en'))),
-                ],
-                'field_geslib_id' => $product_category->geslib_id,
-            ]);
-    
-            // Validate the term
-            $violations = $term->validate();
-    
-            if ($violations->count() > 0) {
-                // Handle error here
-                foreach ($violations as $violation) {
-                    \Drupal::messenger()->addError($violation->getMessage());
-                }
-    
-                return null;
-            } else {
-                // Save the term
-                $term->save();
-    
-                return $term;
-            }
-        } else {
-            \Drupal::messenger()->addMessage(t('Category already exists'));
-    
-            return null;
-        }
-    }
     
 
 }
