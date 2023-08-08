@@ -36,6 +36,8 @@
         "drupal/pathauto": "^1.11",
         "drupal/search_api": "^1.29",
         "drupal/selective_better_exposed_filters": "^3.0@beta",
+        "drupal/sharethis": "^3.0",
+        "drupal/social_media_links": "^2.9",
         "drupal/webform": "^6.2@beta",
         "drupal/yoast_seo": "^1.8",
         "drush/drush": "^11.6",
