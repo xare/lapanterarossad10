@@ -12,11 +12,35 @@ use Drush\Commands\DrushCommands;
  *
  * @DrushCommands()
  */
+/**
+ * DilveScanProductsCommand
+ */
 class DilveScanProductsCommand extends DrushCommands {
-
-    private $drupal;
-    private $logger_factory;
-    private $dilveApi;
+    
+    /**
+     * drupal
+     *
+     * @var mixed
+     */
+    private $drupal;    
+    /**
+     * logger_factory
+     *
+     * @var mixed
+     */
+    private $logger_factory;    
+    /**
+     * dilveApi
+     *
+     * @var mixed
+     */
+    private $dilveApi;    
+    /**
+     * __construct
+     *
+     * @param  mixed $logger_factory
+     * @return void
+     */
     public function __construct(LoggerChannelFactoryInterface $logger_factory) {
         $this->drupal = new DilveApiDrupalManager();
         $this->logger_factory = $logger_factory;
@@ -31,7 +55,12 @@ class DilveScanProductsCommand extends DrushCommands {
      * @description Scan products from the database and downloads the pictures.
      * 
      */
-
+    
+    /**
+     * scanProducts
+     *
+     * @return void
+     */
     public function scanProducts() {
         $start = 0;
         $limit = 100; //number of products to process at a time.
