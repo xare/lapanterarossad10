@@ -7,6 +7,9 @@ use Drush\Commands\DrushCommands;
 use Consolidation\AnnotatedCommand\CommandResult;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
 
+/**
+ * GeslibShowTablesCommand
+ */
 class GeslibShowTablesCommand extends DrushCommands {
     /**
      * Prints a the number of lines of geslib log and geslib lines
@@ -15,7 +18,12 @@ class GeslibShowTablesCommand extends DrushCommands {
      * @description Prints a the number of lines of geslib log and geslib lines
      * 
      */
-
+     
+     /**
+      * showTables
+      *
+      * @return void
+      */
      public function showTables() {
         $geslibApiDrupal = new GeslibApiDrupalManager();
         $tables = ['log', 'lines'];

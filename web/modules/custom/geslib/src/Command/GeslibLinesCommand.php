@@ -14,6 +14,9 @@ use Drupal\geslib\Api\GeslibApiLog;
  *
  * @DrushCommands()
  */
+/**
+ * GeslibLinesCommand
+ */
 class GeslibLinesCommand extends DrushCommands {
     private $logger_factory;
     public function __construct( LoggerChannelFactoryInterface $logger_factory ) {
@@ -32,7 +35,12 @@ class GeslibLinesCommand extends DrushCommands {
      * @description Stores geslib file data to the database table geslib_log.
      * 
      */
-
+    
+    /**
+     * lines
+     *
+     * @return void
+     */
     public function lines() {
         $geslibApiLog = new GeslibApiLog($this->logger_factory);
         $geslibApiLines = new GeslibApiLines($this->logger_factory);

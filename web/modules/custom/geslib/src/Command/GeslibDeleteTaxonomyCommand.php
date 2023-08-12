@@ -21,7 +21,13 @@ class GeslibDeleteTaxonomyCommand extends DrushCommands {
      * @description Defines a Drush command to fully delete the terms of a given taxonomy.
      * 
      */
-
+    
+    /**
+     * deleteTaxonomy
+     *
+     * @param  mixed $taxonomy_name
+     * @return void
+     */
     public function deleteTaxonomy($taxonomy_name) {
         $terms = \Drupal::entityTypeManager()
                     ->getStorage('taxonomy_term')

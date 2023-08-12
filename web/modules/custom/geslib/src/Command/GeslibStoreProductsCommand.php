@@ -6,10 +6,29 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
 use Drush\Commands\DrushCommands;
 
-class GeslibStoreProductsCommand extends DrushCommands {
-    private $drupal;
+/**
+ * GeslibStoreProductsCommand
+ */
+class GeslibStoreProductsCommand extends DrushCommands {    
+    /**
+     * drupal
+     *
+     * @var mixed
+     */
+    private $drupal;    
+    /**
+     * logger_factory
+     *
+     * @var mixed
+     */
     private $logger_factory;
-    
+        
+    /**
+     * __construct
+     *
+     * @param  mixed $logger_factory
+     * @return void
+     */
     public function __construct( LoggerChannelFactoryInterface $logger_factory) {
         $this->drupal = new GeslibApiDrupalManager($logger_factory);
     }
@@ -19,6 +38,11 @@ class GeslibStoreProductsCommand extends DrushCommands {
      * @alias gssp
      * @description Stores geslib products to drupal.
      * 
+     */    
+    /**
+     * storeProducts
+     *
+     * @return void
      */
     public function storeProducts() {
         $this->drupal->storeProducts();

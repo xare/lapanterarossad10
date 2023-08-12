@@ -8,8 +8,22 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
 use Drupal\geslib\Api\GeslibApiStoreData;
 
-class GeslibStoreProductCategoriesCommand extends DrushCommands {
-   private $logger_factory;
+/**
+ * GeslibStoreProductCategoriesCommand
+ */
+class GeslibStoreProductCategoriesCommand extends DrushCommands {   
+   /**
+    * logger_factory
+    *
+    * @var mixed
+    */
+   private $logger_factory;   
+   /**
+    * __construct
+    *
+    * @param  mixed $logger_factory
+    * @return void
+    */
    public function __construct(LoggerChannelFactoryInterface $logger_factory){
       $this->logger_factory = $logger_factory;
    }
@@ -21,7 +35,12 @@ class GeslibStoreProductCategoriesCommand extends DrushCommands {
      * @description Takes Product categories data from the geslib_lines and stores to taxonomies
      * 
      */
-
+     
+     /**
+      * storeEditorials
+      *
+      * @return void
+      */
      public function storeEditorials() {
         $geslibApiStoreData = new GeslibApiStoreData($this->logger_factory);
         $geslibApiStoreData->storeProductCategories();

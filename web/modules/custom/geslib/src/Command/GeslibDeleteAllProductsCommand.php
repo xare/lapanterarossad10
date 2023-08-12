@@ -54,6 +54,15 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
     /**
     * Batch finish callback for deleting all Commerce products.
     */
+        
+    /**
+     * deleteAllProductsFinish
+     *
+     * @param  mixed $success
+     * @param  mixed $results
+     * @param  mixed $operations
+     * @return void
+     */
     public function deleteAllProductsFinish($success, $results, $operations) {
         $this->output()->getFormatter()->setDecorated(false);
         if ($success) {
@@ -65,7 +74,14 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
 
     /**
     * Batch operation for deleting a Commerce product.
-    */
+    */    
+    /**
+     * deleteProducts
+     *
+     * @param  mixed $product_ids
+     * @param  mixed $context
+     * @return void
+     */
     public function deleteProducts($product_ids, &$context) {
         $product_storage = \Drupal::entityTypeManager()
                             ->getStorage('commerce_product');

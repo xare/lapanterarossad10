@@ -12,11 +12,25 @@ use Drupal\geslib\Api\GeslibApiReadFiles;
  *
  * @DrushCommands()
  */
-class GeslibLogCommand extends DrushCommands {
+/**
+ * GeslibLogCommand
+ */
+class GeslibLogCommand extends DrushCommands {    
+    /**
+     * geslibApiReadFiles
+     *
+     * @var mixed
+     */
     private $geslibApiReadFiles;    
     private $drupal;
     private $logger_factory;
-
+    
+    /**
+     * __construct
+     *
+     * @param  mixed $logger_factory
+     * @return void
+     */
     public function __construct( LoggerChannelFactoryInterface $logger_factory ) {
         $this->logger_factory = $logger_factory;
         $this->geslibApiReadFiles = new GeslibApiReadFiles( $this->logger_factory );
@@ -29,7 +43,12 @@ class GeslibLogCommand extends DrushCommands {
      * @description Stores geslib file data to the database table geslib_log.
      * 
      */
-
+    
+    /**
+     * log
+     *
+     * @return void
+     */
     public function log() {
         $response = $this->geslibApiReadFiles->readFolder();
         if ( false === $response) $this->output()->writeln('Geslib Log ERROR: No files in the folder');

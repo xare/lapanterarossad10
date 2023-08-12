@@ -11,6 +11,9 @@ use Drush\Commands\DrushCommands;
  *
  * @DrushCommands()
  */
+/**
+ * GeslibTruncateTableCommand
+ */
 class GeslibTruncateTableCommand extends DrushCommands {
     
     /**
@@ -20,7 +23,13 @@ class GeslibTruncateTableCommand extends DrushCommands {
      * @description Defines a Drush command to empty the tables geslib_log or geslib_lines.
      * 
      */
-
+    
+    /**
+     * truncateTable
+     *
+     * @param  mixed $table_suffix
+     * @return void
+     */
     public function truncateTable($table_suffix) {
         $database = \Drupal::database();
         $table_name = 'geslib_'.$table_suffix;
