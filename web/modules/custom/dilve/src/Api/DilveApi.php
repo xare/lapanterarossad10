@@ -13,14 +13,47 @@ use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
 
+/**
+ * DilveApi
+ */
 class DilveApi {
-
-	private $url_host;
-  	private $url_path;
-  	private $url_user;
-  	private $url_pass;
+	
+	/**
+	 * url_host
+	 *
+	 * @var mixed
+	 */
+	private $url_host;  	
+  	/**
+  	 * url_path
+  	 *
+  	 * @var mixed
+  	 */
+  	private $url_path;  	
+  	/**
+  	 * url_user
+  	 *
+  	 * @var mixed
+  	 */
+  	private $url_user;  	
+  	/**
+  	 * url_pass
+  	 *
+  	 * @var mixed
+  	 */
+  	private $url_pass;	
+	/**
+	 * config
+	 *
+	 * @var mixed
+	 */
 	private $config;
-
+	
+	/**
+	 * __construct
+	 *
+	 * @return void
+	 */
 	public function __construct(){
 		$this->config = \Drupal::config('dilve.settings');
 
@@ -290,5 +323,4 @@ class DilveApi {
 			\Drupal::service('file.usage')->add($file, 'dilve', 'node', $product_id);
 		}
 	}
-
 }

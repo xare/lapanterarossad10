@@ -2,7 +2,17 @@
 
 namespace Drupal\dilve\Api;
 
-class DilveApiDrupalManager {
+/**
+ * DilveApiDrupalManager
+ */
+class DilveApiDrupalManager {    
+    /**
+     * fetchAllProducts
+     *
+     * @param  mixed $start
+     * @param  mixed $limit
+     * @return void
+     */
     public function fetchAllProducts ($start, $limit) {
         $query = \Drupal::entityQuery('commerce_product')
                     ->accessCheck(FALSE)
