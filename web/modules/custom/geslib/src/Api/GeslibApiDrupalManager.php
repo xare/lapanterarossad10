@@ -5,9 +5,11 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\Entity\Term;
 
-
 use PDO;
 
+/**
+ * GeslibApiDrupalManager
+ */
 class GeslibApiDrupalManager {
     const GESLIB_LINES_TABLE = 'geslib_lines';
     const GESLIB_LOG_TABLE = 'geslib_log';
@@ -28,16 +30,50 @@ class GeslibApiDrupalManager {
 		'lines_count', // int number of lines 
 		'status', // string waiting | enqueued | processed
 	];
-
-    private $database;
-    private $geslibApiSanitize;
-    protected $logger;
-    private $output;
+    
+    /**
+     * database
+     *
+     * @var mixed
+     */
+    private $database;    
+    /**
+     * geslibApiSanitize
+     *
+     * @var mixed
+     */
+    private $geslibApiSanitize;    
+    /**
+     * logger
+     *
+     * @var mixed
+     */
+    protected $logger;    
+    /**
+     * output
+     *
+     * @var mixed
+     */
+    private $output;    
+    /**
+     * __construct
+     *
+     * @param  mixed $logger_factory
+     * @return void
+     */
     public function __construct( LoggerChannelFactoryInterface $logger_factory ){
         $this->database = \Drupal::database();
         $this->geslibApiSanitize = new GeslibApiSanitize();
         $this->logger = $logger_factory->get('geslib');
-    }
+    }    
+    /**
+     * insertLogData
+     *
+     * @param  mixed $filename
+     * @param  mixed $status
+     * @param  mixed $linesCount
+     * @return void
+     */
     public function insertLogData( $filename, $status, $linesCount  ) {
         // 1) Check that this filename has never been stored to geslib_log table
         
@@ -80,7 +116,12 @@ class GeslibApiDrupalManager {
         )->fetchField();
         return $result > 0;
     }
-
+    
+    /**
+     * getLogQueuedFile
+     *
+     * @return void
+     */
     public function getLogQueuedFile() {
 		$table_name = self::GESLIB_LOG_TABLE;
 		
@@ -92,7 +133,13 @@ class GeslibApiDrupalManager {
                     ->execute()
                     ->fetchField();
 	}
-
+    
+    /**
+     * insert2geslibLines
+     *
+     * @param  mixed $data_array
+     * @return void
+     */
     public function insert2geslibLines( $data_array ) {
         try{
 		    $this->database
@@ -104,7 +151,12 @@ class GeslibApiDrupalManager {
             return "An error happened while trying to insert a line in ".self::GESLIB_LINES_TABLE. ". The error is " . $e->getMessage() . ".";
         }
 	}
-
+    
+    /**
+     * _readGeslibLinesTable
+     *
+     * @return void
+     */
     public function _readGeslibLinesTable() {
 		$table_name = self::GESLIB_LINES_TABLE;
 		$query = $this->database->select($table_name);
@@ -114,7 +166,15 @@ class GeslibApiDrupalManager {
 			$this->_storeData($result->type, $result->id, $result->content);
 		}
     }
-
+    
+    /**
+     * updateGeslibLines
+     *
+     * @param  mixed $geslib_id
+     * @param  mixed $type
+     * @param  mixed $content
+     * @return void
+     */
     public function updateGeslibLines( $geslib_id, $type, $content){
 		try {
 			$this->database
@@ -128,7 +188,15 @@ class GeslibApiDrupalManager {
 			echo "Un error ha ocurrido al intentar actualizar la tabla". self::GESLIB_LINES_TABLE. " :  ".$e->getMessage() ;
 		}
 	}
-
+    
+    /**
+     * insertProductData
+     *
+     * @param  mixed $content_array
+     * @param  mixed $action
+     * @param  mixed $log_id
+     * @return void
+     */
     public function insertProductData($content_array, $action, $log_id) {
 		try{
             $this->database
@@ -147,7 +215,13 @@ class GeslibApiDrupalManager {
                     return "The product data could not be inserted to geslib Lines ".$e->getMessage();
                 }
 	}
-
+    
+    /**
+     * getLogId
+     *
+     * @param  mixed $filename
+     * @return void
+     */
     public function getLogId($filename){
         return $this->database
                     ->select(self::GESLIB_LOG_TABLE, 't')
@@ -160,7 +234,13 @@ class GeslibApiDrupalManager {
     /** 
 	 * Count the number of rows in the geslib_log and geslib_lines tables
 	 */
-
+	
+	/**
+	 * countRows
+	 *
+	 * @param  mixed $table
+	 * @return void
+	 */
 	public function countRows($table){
         return $this->database
                 ->select('geslib_' . $table, 't')
@@ -171,6 +251,11 @@ class GeslibApiDrupalManager {
 
     /**
      * Get Editorials from Geslib Lines
+     */    
+    /**
+     * getEditorialsFromGeslibLines
+     *
+     * @return void
      */
     public function getEditorialsFromGeslibLines() {
 
@@ -183,8 +268,14 @@ class GeslibApiDrupalManager {
                 ->fetchAll();
     }
 
-    
-
+    /**
+     * _storeData
+     *
+     * @param  mixed $type
+     * @param  mixed $geslib_id
+     * @param  mixed $content
+     * @return void
+     */
     private function _storeData( $type, $geslib_id, $content ) {
 		$store_data=[];
 		$function_name = 'store'.$type[0];
@@ -196,7 +287,13 @@ class GeslibApiDrupalManager {
       
       	return $store_data;
     }
-
+    
+    /**
+     * storeProductCategories
+     *
+     * @param  mixed $product_category
+     * @return void
+     */
     public function storeProductCategories($product_category) {
         $term_name = $this->geslibApiSanitize->utf8_encode($product_category->content);
         $term_description = $term_name;
@@ -247,7 +344,13 @@ class GeslibApiDrupalManager {
             return null;
         }
     }
-
+    
+    /**
+     * storeEditorials
+     *
+     * @param  mixed $editorial
+     * @return void
+     */
     public function storeEditorials( $editorial ) {
         $term_name = $this->geslibApiSanitize->utf8_encode($editorial->content);
         $term_description = $term_name;

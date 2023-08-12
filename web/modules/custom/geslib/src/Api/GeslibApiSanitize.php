@@ -4,12 +4,31 @@ namespace Drupal\geslib\Api;
 
 use Drupal\geslib\Api\Encoding;
 
-class GeslibApiSanitize {
-    private $encoding;
+/**
+ * GeslibApiSanitize
+ */
+class GeslibApiSanitize {    
+    /**
+     * encoding
+     *
+     * @var mixed
+     */
+    private $encoding;    
+    /**
+     * __construct
+     *
+     * @return void
+     */
     public function __construct()
     {
         $this->encoding = new Encoding();
-    }
+    }    
+    /**
+     * sanitize_content_array
+     *
+     * @param  mixed $content_array
+     * @return mixed $content_array
+     */
     public function sanitize_content_array($content_array){
         // Sanitize the array values
         $content_array = array_map(function($value) {
@@ -37,11 +56,10 @@ class GeslibApiSanitize {
     /**
     * Convert and Fix UTF8 strings
     *
-    * @param $string
+    * @param string $string
     *     String to be fixed
     *
-    * Returns
-    *     $string
+    * @return mixed $string | NULL
     */
     public function utf8_encode($string) {
         if ($string) {

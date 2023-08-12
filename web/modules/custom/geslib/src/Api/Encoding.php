@@ -9,6 +9,9 @@ namespace Drupal\geslib\Api;
  * @example  http://www.framework2.com.ar/dzone/forceUTF8-es/
   */
 
+/**
+ * Encoding
+ */
 class Encoding {
 
   protected static $win1252ToUtf8 = array(
@@ -115,8 +118,7 @@ class Encoding {
        "\xc5\xbe"     => "\x9e",
        "\xc5\xb8"     => "\x9f"
     );
-
-  static function toUTF8($text){
+  
   /**
    * Function Encoding::toUTF8
    *
@@ -141,6 +143,8 @@ class Encoding {
    * @return string  The same string, UTF8 encoded
    *
    */
+  static function toUTF8($text){
+  
 
     if(is_array($text)) {
       foreach($text as $k => $v) {
@@ -206,7 +210,13 @@ class Encoding {
       return $text;
     }
   }
-
+  
+  /**
+   * toWin1252
+   *
+   * @param  mixed $text
+   * @return void
+   */
   static function toWin1252($text) {
     if(is_array($text)) {
       foreach($text as $k => $v) {
@@ -222,15 +232,33 @@ class Encoding {
       return $text;
     }
   }
-
+  
+  /**
+   * toISO8859
+   *
+   * @param  mixed $text
+   * @return void
+   */
   static function toISO8859($text) {
     return self::toWin1252($text);
   }
-
+  
+  /**
+   * toLatin1
+   *
+   * @param  mixed $text
+   * @return void
+   */
   static function toLatin1($text) {
     return self::toWin1252($text);
   }
-
+  
+  /**
+   * fixUTF8
+   *
+   * @param  mixed $text
+   * @return void
+   */
   static function fixUTF8( $text ){
     if(is_array( $text )) {
       foreach( $text as $k => $v ) {
@@ -247,7 +275,13 @@ class Encoding {
   return $result;
     
   }
-
+  
+  /**
+   * UTF8FixWin1252Chars
+   *
+   * @param  mixed $text
+   * @return void
+   */
   static function UTF8FixWin1252Chars($text){
     // If you received an UTF-8 string that was converted from Windows-1252 as it was ISO8859-1
     // (ignoring Windows-1252 chars from 80 to 9F) use this function to fix it.
@@ -255,10 +289,16 @@ class Encoding {
 
     return str_replace(array_keys(self::$brokenUtf8ToUtf8), array_values(self::$brokenUtf8ToUtf8), $text);
   }
-
+  
+  /**
+   * removeBOM
+   *
+   * @param  mixed $str
+   * @return void
+   */
   static function removeBOM($str=""){
     if(substr($str, 0,3) == pack("CCC",0xef,0xbb,0xbf)) {
-      $str=substr($str, 3);
+      $str = substr($str, 3);
     }
     return $str;
   }

@@ -5,6 +5,9 @@ namespace Drupal\geslib\Api;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
 
+/**
+ * GeslibApiLines
+ */
 class GeslibApiLines {
 	static $productKeys = [
 			"type", 
@@ -117,20 +120,56 @@ class GeslibApiLines {
 		//"PROVIN", // Provincias
 		//"CAGRDTV", // Agrupaciones de descuentos de ventas: Cabecera
 		//"LAGRDTV" // Agrupaciones de descuentos de ventas: Líneas
-	];
-	private $drupal;
-	private $mainFolderPath;
-	private $geslibSettings;
-	private $geslibApiSanitize;
+	];	
+	/**
+	 * drupal
+	 *
+	 * @var mixed
+	 */
+	private $drupal;	
+	/**
+	 * mainFolderPath
+	 *
+	 * @var mixed
+	 */
+	private $mainFolderPath;	
+	/**
+	 * geslibSettings
+	 *
+	 * @var mixed
+	 */
+	private $geslibSettings;	
+	/**
+	 * geslibApiSanitize
+	 *
+	 * @var mixed
+	 */
+	private $geslibApiSanitize;	
+	/**
+	 * logger_factory
+	 *
+	 * @var mixed
+	 */
 	private $logger_factory;
-
+	
+	/**
+	 * __construct
+	 *
+	 * @param  mixed $logger_factory
+	 * @return void
+	 */
 	public function __construct( LoggerChannelFactoryInterface $logger_factory) {
 		$this->geslibSettings = \Drupal::config('geslib.settings')->get('geslib_settings');
         $public_files_path = \Drupal::service('file_system')->realpath("public://");
         $this->mainFolderPath = $public_files_path . '/' . $this->geslibSettings['geslib_folder_name'].'/';
 		$this->drupal = new GeslibApiDrupalManager($logger_factory);
 		$this->geslibApiSanitize = new GeslibApiSanitize();
-	}
+	}	
+	/**
+	 * storeToLines
+	 *
+	 * @return void
+	 */
 	public function storeToLines(){
 		// 1. Read the log table
 		$filename = $this->drupal->getLogQueuedFile();
@@ -139,7 +178,14 @@ class GeslibApiLines {
 		// 2. Read the file and store in lines table
 		return $this->readFile($this->mainFolderPath.$filename, $log_id);
 	}
-	
+		
+	/**
+	 * readFile
+	 *
+	 * @param  mixed $path
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function readFile($path, $log_id) {
 		$lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$i = 0;
@@ -156,7 +202,14 @@ class GeslibApiLines {
 		}
 		return 'File '.$path.' has been read';
 	}
-	
+		
+	/**
+	 * processGP4
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function processGP4($data, $log_id) {
 
 		//"type" | "action" | "geslib_id" |	"description" |	"author" | "pvp_ptas" |	"isbn" | "ean" |"num_paginas" |	"num_edicion" |	"origen_edicion" |"fecha_edicion" |	"fecha_reedicion" |	"año_primera_edicion" |"año_ultima_edicion" |"ubicacion" |"stock" |	"materia" |	"fecha_alta" |	"fecha_novedad" |"Idioma" |	"formato_encuadernacion" |"traductor" |"ilustrador" |"colección" |"numero_coleccion" |"subtitulo" |	"estado" |	"tmr" |	"pvp" |	"tipo_de_articulo" |"clasificacion" |"editorial" |	"pvp_sin_iva" |	"num_ilustraciones" |"peso" |"ancho" |"alto" |		"fecha_aparicion" |	"descripcion_externa" |	"palabras_asociadas" |			"ubicacion_alternativa" |"valor_iva" |"valoracion" |"calidad_literaria" |	"precio_referencia" | "cdu" |"en_blanco" |"libre_1" |"libre_2" | 			"premiado" |"pod" | "distribuidor_pod" | "codigo_old" | "talla" |			"color" |"idioma_original" |"titulo_original" |	"pack" |"importe_canon" |	"unidades_compra" |"descuento_maximo"
@@ -173,7 +226,14 @@ class GeslibApiLines {
 		
 		//$this->mergeContent($data['geslib_id'], $content_array, $type);
 	}
-
+	
+	/**
+	 * process6E
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function process6E($data, $log_id) {
 		// Procesa las líneas 6E aquí
 		// 6E|Articulo|Contador|Texto|
@@ -184,11 +244,25 @@ class GeslibApiLines {
 		
 		return $this->mergeContent($geslib_id, $content_array, 'product');
 	}
-
+	
+	/**
+	 * process6TE
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function process6TE($data, $log_id) {
 		// Procesa las líneas 6TE aquí
 	}
-
+	
+	/**
+	 * process1L
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function process1L($data, $log_id) {
 		//1L|B|codigo_editorial
 		//1L|Tipo movimiento|Codigo_editorial|Nombre|nombre_externo|País|
@@ -201,7 +275,14 @@ class GeslibApiLines {
 
 		}
 	}
-
+	
+	/**
+	 * process3
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function process3( $data, $log_id ) {
 		//Add categories
 		//3|A|01|Cartes|||
@@ -218,7 +299,14 @@ class GeslibApiLines {
 			//delete
 		}
 	}
-
+	
+	/**
+	 * process5
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function process5( $data, $log_id ) {
 		//Add a category to to a 
 		// “5”|Código de materia (varchar(12))|Código de articulo + SEPARADOR
@@ -233,15 +321,39 @@ class GeslibApiLines {
 			
 			$this->mergeContent($geslib_id, $content_array, 'product');
 		}
-	}
+	}	
+	/**
+	 * processAUT
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function processAUT( $data, $log_id ) {
 		// Procesa las líneas AUT aquí
 	}
-
+	
+	/**
+	 * processAUTBIO
+	 *
+	 * @param  mixed $data
+	 * @param  mixed $log_id
+	 * @return void
+	 */
 	private function processAUTBIO( $data, $log_id ) {
 		// Procesa las líneas AUTBIO aquí
 	}
-	
+		
+	/**
+	 * insert2Gesliblines
+	 *
+	 * @param  mixed $geslib_id
+	 * @param  mixed $log_id
+	 * @param  mixed $type
+	 * @param  mixed $action
+	 * @param  mixed $data
+	 * @return void
+	 */
 	private function insert2Gesliblines( $geslib_id, $log_id, $type, $action, $data = null ) {
 		$data_array = [
 			'log_id' => $log_id,
@@ -254,7 +366,15 @@ class GeslibApiLines {
 		
 		$this->drupal->insert2GeslibLines( $data_array );
 	}
-
+	
+	/**
+	 * mergeContent
+	 *
+	 * @param  mixed $geslib_id
+	 * @param  mixed $new_content_array
+	 * @param  mixed $type
+	 * @return void
+	 */
 	private function mergeContent( $geslib_id, $new_content_array, $type ) {
 		
 		//this function is called when the product has been created but we need to add more data to its content json string
@@ -284,5 +404,4 @@ class GeslibApiLines {
 			return "error";
 		}
 	}
-
 }

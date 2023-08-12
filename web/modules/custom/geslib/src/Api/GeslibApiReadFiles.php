@@ -8,12 +8,46 @@ use ZipArchive;
 
 // This file contains all the functions necessary to read the contents in the geslib folder and store them to the logs table
 
-class GeslibApiReadFiles {
-	private $mainFolderPath;
-    private $histoFolderPath;
-	private $geslibSettings;
-    private $drupal;
-	private $logger_factory;
+/**
+ * GeslibApiReadFiles
+ */
+class GeslibApiReadFiles {	
+	/**
+	 * mainFolderPath
+	 *
+	 * @var mixed
+	 */
+	private $mainFolderPath;    
+    /**
+     * histoFolderPath
+     *
+     * @var mixed
+     */
+    private $histoFolderPath;	
+	/**
+	 * geslibSettings
+	 *
+	 * @var mixed
+	 */
+	private $geslibSettings;    
+    /**
+     * drupal
+     *
+     * @var mixed
+     */
+    private $drupal;	
+	/**
+	 * logger_factory
+	 *
+	 * @var mixed
+	 */
+	private $logger_factory;    
+    /**
+     * __construct
+     *
+     * @param  mixed $logger_factory
+     * @return void
+     */
     public function __construct( LoggerChannelFactoryInterface $logger_factory ) {
 		$this->geslibSettings = \Drupal::config('geslib.settings')->get('geslib_settings');
 		$public_files_path = \Drupal::service('file_system')->realpath("public://");
@@ -22,7 +56,12 @@ class GeslibApiReadFiles {
 		$this->logger_factory = $logger_factory;
         $this->drupal = new GeslibApiDrupalManager($this->logger_factory);
     }
-
+	
+	/**
+	 * readFolder
+	 *
+	 * @return void
+	 */
 	public function readFolder(){
 		
 		$files = glob($this->mainFolderPath . 'INTER*');
@@ -46,6 +85,11 @@ class GeslibApiReadFiles {
 
 	/**
      * Process ZIP files in the HISTO folder: uncompress, read, compress, and insert data into the database.
+     */    
+    /**
+     * processZipFiles
+     *
+     * @return void
      */
     public function processZipFiles() {
         // Check if the "HISTO" folder exists
@@ -64,6 +108,12 @@ class GeslibApiReadFiles {
      * Process a ZIP file: uncompress, read its contents, compress again, and insert data into the database.
      *
      * @param string $zipFilePath Path to the ZIP file.
+     */    
+    /**
+     * processZipFile
+     *
+     * @param  mixed $zipFilePath
+     * @return void
      */
     private function processZipFile($zipFilePath) {
         // Uncompress the ZIP file to a temporary directory
@@ -109,7 +159,7 @@ class GeslibApiReadFiles {
 	if (!$this->drupal->isFilenameExists($uncompressedFileName)) {
 		// Insert data into the database table
 		$this->drupal->insertLogData($uncompressedFileName, 'logged', $linesCount);
-	}
+		}
 	}
 
 
@@ -136,7 +186,13 @@ class GeslibApiReadFiles {
 			error_log('Insert failed: ' . $wpdb->last_error);
 		}
 	} */
-	
+		
+	/**
+	 * countLines
+	 *
+	 * @param  mixed $filename
+	 * @return void
+	 */
 	public function countLines( $filename ) {
 		// Check if the file exists
 		if( file_exists( $filename ) )
