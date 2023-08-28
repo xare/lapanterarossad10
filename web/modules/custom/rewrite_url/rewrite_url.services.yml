@@ -1,0 +1,5 @@
+services:
+  rewrite_url.twig_extension:
+    class: Drupal\rewrite_url\TwigExtension\CustomFilters
+    tags:
+      - { name: twig.extension }

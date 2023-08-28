@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "lapanterarossa",
+			"path": "../../../../../.."
+		},
+		{
+			"name": "apache2",
+			"path": "../../../../../../../../../log/apache2"
+		},
+		{
+			"name": "solr",
+			"path": "../../../../../../../../../../opt/solr"
+		}
+	],
+	"settings": {}
+}

@@ -1,0 +1,6 @@
+services:
+  custom_twig_filters.twig_extension:
+    class: Drupal\custom_twig_filters\TwigExtension\ImageStyleExtension
+    arguments: ['@entity_type.manager', '@image.factory']
+    tags:
+      - { name: twig.extension }

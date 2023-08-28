@@ -408,7 +408,7 @@ class GeslibApiDrupalManager {
                     ->execute();
         $product_geslib_lines = $query->fetchAll(PDO::FETCH_OBJ);
         $i = 0;
-        $limit = 100;
+        $limit = count($product_geslib_lines);
 		foreach($product_geslib_lines as $product_geslib_line) {
             if( $i < $limit )
 			    $this->storeProduct($product_geslib_line->geslib_id, $product_geslib_line->content);

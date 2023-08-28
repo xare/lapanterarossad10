@@ -1,0 +1,26 @@
+<?php
+/**
+ * Implements hook_preprocess_HOOK() for taxonomy-term templates.
+ */
+function book_listing_preprocess_taxonomy_term(&$variables) {
+  if (isset($variables['term'])) {
+    $tid = $variables['term']->id();
+    $book_service = \Drupal::service('book_listing.book_service');
+    $variables['related_books'] = $book_service->getRelatedBooks($tid);
+    // Pass pager to the template
+    $variables['pager'] = [
+        '#type' => 'pager',
+    ];
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function book_listing_theme() {
+    return [
+        'book_listing_pager' => [
+            'render element' => 'elements',
+        ],
+    ];
+}

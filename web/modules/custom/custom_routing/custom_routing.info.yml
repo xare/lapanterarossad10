@@ -1,0 +1,9 @@
+name: 'Custom Routing'
+type: module
+description: 'Provides custom routing alterations to give higher priority to specific views.'
+core_version_requirement: ^10
+package: Custom
+dependencies:
+  - drupal:views
+version: '1.0'
+project: 'custom_routing'

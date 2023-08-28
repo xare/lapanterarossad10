@@ -100,6 +100,12 @@ h2, h3, p {
     margin-bottom: 1rem;
 }
 
+/* BANNER ENTRE TODAS */
+
+.banner p.description {
+  margin-bottom:0 !important;
+}
+
 /* COMMERCE CHECKOUT STEPS */
 
 .checkout-progress--step::before {

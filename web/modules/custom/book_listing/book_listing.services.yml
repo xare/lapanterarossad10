@@ -1,0 +1,4 @@
+services:
+  book_listing.book_service:
+    class: Drupal\book_listing\Service\BookService
+    arguments: ['@database', '@entity_type.manager', '@pager.manager']

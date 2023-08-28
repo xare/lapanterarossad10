@@ -1,0 +1,10 @@
+name: 'Book Listing'
+type: module
+description: 'Provides related book functionalities'
+core_version_requirement: ^10
+package: Custom
+dependencies:
+  - drupal:node
+  - drupal:taxonomy
+version: '1.0'
+project: 'book_listing'

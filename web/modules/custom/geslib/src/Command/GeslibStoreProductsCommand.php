@@ -32,16 +32,12 @@ class GeslibStoreProductsCommand extends DrushCommands {
     public function __construct( LoggerChannelFactoryInterface $logger_factory) {
         $this->drupal = new GeslibApiDrupalManager($logger_factory);
     }
+
     /**
      * Stores geslib products to drupal.
      * @command geslib:storeProducts
      * @alias gssp
      * @description Stores geslib products to drupal.
-     * 
-     */    
-    /**
-     * storeProducts
-     *
      * @return void
      */
     public function storeProducts() {

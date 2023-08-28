@@ -17,6 +17,7 @@
  */
 #}
 <article{{ attributes.addClass('profile') }}>
+  <h1>{{user.name.value}}</h1>
   {% if content %}
     {{- content -}}
   {% endif %}

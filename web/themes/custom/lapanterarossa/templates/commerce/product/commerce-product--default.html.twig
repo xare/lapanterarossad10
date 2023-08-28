@@ -61,8 +61,13 @@
     <!-- Any other fields you want to display -->
   </div>
   <div class="column is-12-tablet is-2-desktop data-column">
+  
     <ul class="chips">
-      <li>{{ product.field_category }}</li>
+      <li>
+        <a href="/categoria/{{ product.field_categoria.0['#title']|clean_url|lower }}">
+          {{ product.field_categoria.0['#title'] }}
+        </a>
+      </li>
     </ul>
     <ul class="book-data">
       <li>{{ product.field_num_paginas }}</li>

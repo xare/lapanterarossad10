@@ -35,7 +35,21 @@
     <h2><a href="{{ url }}">{{ name }}</a></h2>
   {% endif %}
   {{ title_suffix }}
-  <div class="content">
-    {{ content }}
-  </div>
+    <h3>{{ content }}</h3>
+    {% if related_books %}
+      <div class="columns grid-books">
+        {% for book in related_books.books %}
+          <a class="column book-item is-3-desktop is-6-tablet" href="{{ book.url }}">
+            <figure class="cover">
+              <img src="{{book.image_uri}}" alt="{{ book.title }}" />
+            </figure>
+            <p class="title">{{ book.title }}</p>
+            <p class="price">{{ book.price|number_format(2) }} € </p>
+          </a>
+        {% endfor %}
+         {% if related_books.pager %}
+          {{ pager }}
+        {% endif %}
+      </div>
+  {% endif %}
 </div>

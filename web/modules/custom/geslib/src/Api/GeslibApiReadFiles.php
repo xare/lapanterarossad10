@@ -191,7 +191,7 @@ class GeslibApiReadFiles {
 	 * countLines
 	 *
 	 * @param  mixed $filename
-	 * @return void
+	 * @return int|false
 	 */
 	public function countLines( $filename ) {
 		// Check if the file exists

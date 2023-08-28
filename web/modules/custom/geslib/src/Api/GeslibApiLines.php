@@ -168,7 +168,7 @@ class GeslibApiLines {
 	/**
 	 * storeToLines
 	 *
-	 * @return void
+	 * @return string
 	 */
 	public function storeToLines(){
 		// 1. Read the log table
@@ -184,18 +184,17 @@ class GeslibApiLines {
 	 *
 	 * @param  mixed $path
 	 * @param  mixed $log_id
-	 * @return void
+	 * @return string
 	 */
 	private function readFile($path, $log_id) {
 		$lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$i = 0;
 		foreach ($lines as $line) {
-			//if ( $i > 4000) return false;
 			$data = explode( '|', $line ) ;
 			array_pop($data);
-			if(in_array($data[0], self::$lineTypes)) {
+			if( in_array($data[0], self::$lineTypes ) ) {
 				$function_name = 'process' . $data[0];
-				if (method_exists($this, $function_name)) {
+				if ( method_exists( $this, $function_name ) ) {
 					$this->{$function_name}($data, $log_id);
 				}
 			}

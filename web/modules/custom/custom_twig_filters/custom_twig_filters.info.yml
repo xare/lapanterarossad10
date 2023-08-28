@@ -1,0 +1,9 @@
+name: 'Custom Twig Filters'
+type: module
+description: 'Provides custom Twig filters.'
+core_version_requirement: ^8 || ^9 || ^10
+package: Custom
+dependencies:
+  - drupal:image
+version: '1.0'
+project: 'custom_twig_filters'

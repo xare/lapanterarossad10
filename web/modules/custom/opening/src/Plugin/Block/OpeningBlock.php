@@ -29,7 +29,7 @@ class OpeningBlock extends BlockBase {
 
     // Build the sentence based on the library's status and the current time.
     $sentence = $is_library_open ? $this->t('Ahora son las @time, nos puedes encontrar en la librería', ['@time' => $current_time_formatted]) : $this->t('Ahora son las @time, estamos cerradas', ['@time' => $current_time_formatted]);
-    $sentence = '<p>' . $sentence . '</p>';
+    $sentence = '<p class="mb-0">' . $sentence . '</p>';
         return [
             '#markup' => $sentence,
         ];

@@ -8,3 +8,8 @@ services:
     arguments : ['@logger.factory']
     tags:
       - { name: drush.command }
+  dilve.scanProduct:
+    class: Drupal\dilve\Command\DilveScanProductCommand
+    arguments : ['@logger.factory','ean']
+    tags:
+      - { name: drush.command }

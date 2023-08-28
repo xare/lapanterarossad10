@@ -53,19 +53,13 @@ class DilveScanProductsCommand extends DrushCommands {
      * @command dilve:scanProducts
      * @alias dlsp
      * @description Scan products from the database and downloads the pictures.
-     * 
-     */
-    
-    /**
-     * scanProducts
-     *
      * @return void
      */
     public function scanProducts() {
         $start = 0;
         $limit = 100; //number of products to process at a time.
         
-        while ($products = $this->drupal->fetchAllProducts($start, $limit)){
+        while ($products = $this->drupal->fetchAllProducts($start)){
             $this->logger->notice('Processed ' . count($products) . ' products.');
             $this->output()->writeln('Processed ' . count($products) . ' products.');
             foreach($products as $product){
@@ -73,9 +67,9 @@ class DilveScanProductsCommand extends DrushCommands {
                 if($ean){
                     $book = $this->dilveApi->search($ean);
                     if($book && isset($book['cover_url'])) {
-                        $file = $this->dilveApi->create_cover($book['cover_url'],$ean.'.jpg');
+                        $file = $this->dilveApi->create_cover( $book['cover_url'], $ean.'.jpg');
                         if ( $file  ) {
-                            $this->dilveApi->set_featured_image_for_product( $file, $ean);
+                            $this->dilveApi->set_featured_image_for_product( $file, $ean );
                             $this->output()->writeln( 'Success to create cover image for EAN: ' . $ean );
                         } else {
                             \Drupal::messenger()->addError( 'Failed to create cover image for EAN: ' . $ean );

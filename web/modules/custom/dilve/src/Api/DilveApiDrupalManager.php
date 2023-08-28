@@ -13,11 +13,11 @@ class DilveApiDrupalManager {
      * @param  mixed $limit
      * @return void
      */
-    public function fetchAllProducts ($start, $limit) {
-        $query = \Drupal::entityQuery('commerce_product')
+    public function fetchAllProducts ($start, $limit=0) {
+        $product_ids = \Drupal::entityQuery('commerce_product')
                     ->accessCheck(FALSE)
-                    ->range($start, $limit);
-        $product_ids = $query->execute();
+                    ->execute();
+                    //->range($start, $limit);
 
         return \Drupal::entityTypeManager()
                         ->getStorage('commerce_product')

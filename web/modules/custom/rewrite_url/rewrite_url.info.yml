@@ -1,0 +1,6 @@
+name: Rewrite Url
+type: module
+description: Provides a custom url filter for Twig templates.
+core: 8.x
+core_version_requirement: ^9 || ^10
+package: Custom

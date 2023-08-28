@@ -15,7 +15,9 @@
   </div>
   <div class="layout-region layout-region-checkout-secondary">
     <h3>{% trans %} Order summary {% endtrans %}</h3>
-    {{ form.sidebar }}
+    <div class="resume-box">
+      {{ form.sidebar }}
+    </div> 
   </div>
   <div class="layout-region layout-region-checkout-footer">
     {{ form.actions }}

@@ -75,12 +75,12 @@ class DilveApi {
 	public function search($isbn) {
 		$url = "http://{$this->url_host}{$this->url_path}/getRecordsX.do";
 		$query = [
-		'user' => $this->url_user,
-		'password' => $this->url_pass,
-		'identifier' => $isbn,
-		'metadataformat' => 'ONIX',
-		'version' => '2.1',
-		'encoding' => 'UTF-8',
+			'user' => $this->url_user,
+			'password' => $this->url_pass,
+			'identifier' => $isbn,
+			'metadataformat' => 'ONIX',
+			'version' => '2.1',
+			'encoding' => 'UTF-8',
 		];
 		try {
 			$http_client = \Drupal::httpClient();
@@ -92,6 +92,7 @@ class DilveApi {
 			}
 		} catch (RequestException $e) {
 			\Drupal::logger('dilve')->error($e);
+			\Drupal::logger('dilve')->error($e);
 		}
 		
 		
@@ -100,65 +101,64 @@ class DilveApi {
 			$book = [];
 			if ($xml_book) {
 			
-			//drupal_set_message(dprint_r($xml_book, 1));
-			
-			$book['isbn'] = $isbn;//(string)$xml_book->RecordReference;
-			$book['ean'] = (string)$xml_book->RecordReference;
-			$book['date'] = (int)$xml_book->PublicationDate;
-			$book['year'] = substr($book['date'],0, 4);
-			
-			#Get Price
-			foreach($xml_book->SupplyDetail->Price as $price) {
-				$book['price'] = (float)$price->PriceAmount;
-				$book['price'] = str_replace('.', '', number_format($book['price'], 2));
-			}
-			# Get title
-			foreach($xml_book->Title as $title) {
-				if ($title->TitleType == "01") {
-					$book["title"] = (string)$title->TitleText;
-					if ($title->Subtitle) {
-						$book["subtitle"] = (string)$title->Subtitle;
+				//drupal_set_message(dprint_r($xml_book, 1));			
+				$book['isbn'] = $isbn;//(string)$xml_book->RecordReference;
+				$book['ean'] = (string)$xml_book->RecordReference;
+				$book['date'] = (int)$xml_book->PublicationDate;
+				$book['year'] = substr($book['date'],0, 4);
+				
+				#Get Price
+				foreach($xml_book->SupplyDetail->Price as $price) {
+					$book['price'] = (float)$price->PriceAmount;
+					$book['price'] = str_replace('.', '', number_format($book['price'], 2));
+				}
+				# Get title
+				foreach($xml_book->Title as $title) {
+					if ($title->TitleType == "01") {
+						$book["title"] = (string)$title->TitleText;
+						if ($title->Subtitle) {
+							$book["subtitle"] = (string)$title->Subtitle;
+						}
 					}
 				}
-			}
 			
-			//Get Publisher
-			foreach ($xml_book->Publisher as $publisher) {
-				if ($publisher->NameCodeType == 02) {
-				$book['publisher'] = (string)$xml_book->Publisher->PublisherName;
-				}
-			}
-			
-			# Get author
-			foreach($xml_book->Contributor as $contributor) {
-				if ($contributor->ContributorRole == "A01") {
-					$author_name = (string) $contributor->PersonNameInverted;
-					$author_description = (string) $contributor->BiographicalNote;
-					if ($author_description) {
-						$book["author"][] = array('name' => $author_name, 'description' => $author_description);
-					} else {
-						$book["author"][] = array('name' => $author_name);
+				//Get Publisher
+				foreach ($xml_book->Publisher as $publisher) {
+					if ($publisher->NameCodeType == 02) {
+					$book['publisher'] = (string)$xml_book->Publisher->PublisherName;
 					}
 				}
-			}
-			# Get measurements
-			foreach($xml_book->Measure as $measure) {
-				switch ($measure->MeasureTypeCode) {
-				case "01":
-					$book["length"] = array('unit' => (string)$measure->MeasureUnitCode, 'value' => (string)$measure->Measurement);
-					break;
-				case "02":
-					$book["width"] = array('unit' => (string)$measure->MeasureUnitCode, 'value' => (string)$measure->Measurement);
-					break;
-				case "08":
-					$book["weight"] = array('unit' => (string)$measure->MeasureUnitCode, 'value' => (string)$measure->Measurement);
-					break;
+				
+				# Get author
+				foreach($xml_book->Contributor as $contributor) {
+					if ($contributor->ContributorRole == "A01") {
+						$author_name = (string) $contributor->PersonNameInverted;
+						$author_description = (string) $contributor->BiographicalNote;
+						if ($author_description) {
+							$book["author"][] = array('name' => $author_name, 'description' => $author_description);
+						} else {
+							$book["author"][] = array('name' => $author_name);
+						}
+					}
 				}
-			}
-			# Get number of pages
-			if($xml_book->NumberOfPages) {
-				$book["pages"] = (string)$xml_book->NumberOfPages;
-			}
+				# Get measurements
+				foreach($xml_book->Measure as $measure) {
+					switch ($measure->MeasureTypeCode) {
+					case "01":
+						$book["length"] = array('unit' => (string)$measure->MeasureUnitCode, 'value' => (string)$measure->Measurement);
+						break;
+					case "02":
+						$book["width"] = array('unit' => (string)$measure->MeasureUnitCode, 'value' => (string)$measure->Measurement);
+						break;
+					case "08":
+						$book["weight"] = array('unit' => (string)$measure->MeasureUnitCode, 'value' => (string)$measure->Measurement);
+						break;
+					}
+				}
+				# Get number of pages
+				if($xml_book->NumberOfPages) {
+					$book["pages"] = (string)$xml_book->NumberOfPages;
+				}
 				# Get descriptions
 				foreach($xml_book->OtherText as $description) {
 					switch ($description->TextTypeCode) {
@@ -236,7 +236,6 @@ class DilveApi {
 		} else {
 			$book = (string)$xml->error->text;
 		}
-		var_dump($book);
 		return $book;
   	}
 
@@ -281,6 +280,15 @@ class DilveApi {
 			if( $response->getStatusCode() == 200 ) {
 				$data = $response->getBody();
 				$destination = 'public://cover_images/' . $filename;
+				// Check if a file with the destination path already exists.
+				if ( file_exists($destination) ) {
+					// File already exists, load the existing file and return it.
+					$existing_files = \Drupal::entityTypeManager()
+										->getStorage('file')
+										->loadByProperties(['uri' => $destination]);
+					$file = reset($existing_files);
+					return $file;
+				}
 				$uri = $fileSystem->saveData($data, $destination, FileSystemInterface::EXISTS_REPLACE);
 				if ($uri) {
 					$file = File::create([
@@ -295,8 +303,14 @@ class DilveApi {
 					return $file;
 				}
 			} else {
-				$messenger->addError('Failed to download image. ' . $response->getStatusCode . ' '. $response->getReasonPhrase());
-            	return NULL;
+				$message = "File for filename: " . $filename. " with location at url: ".$url." FAILED. Status Code: ". $response->getStatusCode ." ".$response->getReasonPhrase();
+				$root_path = \Drupal::root();
+				$logPath = $root_path . '/../logs/dilvePortadasErrorLogs.log';
+				
+				$messenger->addError($message);
+				file_put_contents($logPath, $message);
+				\Drupal::logger('dilve')->error($message);
+				return NULL;
 			}
 		} catch (RequestException $e) {
 			\Drupal::logger('dilve')->error($e->getMessage());
@@ -318,9 +332,29 @@ class DilveApi {
 
 		foreach ($product_ids as $product_id) {
 			$product = \Drupal\commerce_product\Entity\Product::load($product_id);
-			$product->set('field_portada', ['target_id' => $file->id()]);
-			$product->save();
-			\Drupal::service('file.usage')->add($file, 'dilve', 'node', $product_id);
+			try {
+				$product->set('field_portada', ['target_id' => $file->id()]);
+				$product->save();
+				\Drupal::messenger('The product with ID @productId, EAN @ean and title @productTitle was correctly saved.',
+					[ 	
+						'@productId' => $product->id,
+				  		'@productTitle' => $product->title,
+				  		'@ean' => $ean 
+					]
+				);
+				\Drupal::logger('dilve')
+						->info('The product with ID @productId, EAN @ean and title @productTitle was correctly saved.',
+									[ '@productId' => $product->id,
+									  '@productTitle' => $product->title,
+									  '@ean' => $ean ]
+								);
+				\Drupal::service('file.usage')->add($file, 'dilve', 'node', $product_id);
+			} catch(\Exception $exception){
+				\Drupal::logger('dilve')
+						->error('The product was not correctly saved: @exception',
+									[ '@exception' => $exception->getMessage() ]
+								);
+			}
 		}
 	}
 }
