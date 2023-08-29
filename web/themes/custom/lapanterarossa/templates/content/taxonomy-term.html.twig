@@ -35,7 +35,8 @@
     <h2><a href="{{ url }}">{{ name }}</a></h2>
   {% endif %}
   {{ title_suffix }}
-    <h3>{{ content }}</h3>
+  <h1>{{ term.getName()|title }}</h1>
+    <p>{{ description }}</p>
     {% if related_books %}
       <div class="columns grid-books">
         {% for book in related_books.books %}
@@ -43,7 +44,7 @@
             <figure class="cover">
               <img src="{{book.image_uri}}" alt="{{ book.title }}" />
             </figure>
-            <p class="title">{{ book.title }}</p>
+            <p class="title">{{ book.title|capitalize }}</p>
             <p class="price">{{ book.price|number_format(2) }} € </p>
           </a>
         {% endfor %}

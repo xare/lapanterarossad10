@@ -39,7 +39,7 @@
       {# <h3>{{- product.title -}}</h3> #}
       {# {{- product|without('variation_attributes', 'field_portada', 'title') -}} #}
 
-        <h1>{{ product.title }}</h1>
+        <h1>{{ product.title.0['#context'].value|capitalize }}</h1>
         {{ product.field_autor }}
         
         {{ product.variation_price }}
