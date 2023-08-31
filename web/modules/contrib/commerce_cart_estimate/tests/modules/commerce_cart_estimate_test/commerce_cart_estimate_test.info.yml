@@ -1,0 +1,11 @@
+name: Commerce Cart Estimate Test
+type: module
+description: Contains various non-specific things needed in tests.
+package: Testing
+dependencies:
+  - commerce_cart_estimate:commerce_cart_estimate
+
+# Information added by Drupal.org packaging script on 2022-09-07
+version: '2.0.0'
+project: 'commerce_cart_estimate'
+datestamp: 1662565079

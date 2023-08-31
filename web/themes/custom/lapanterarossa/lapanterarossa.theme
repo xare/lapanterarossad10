@@ -179,3 +179,12 @@ function lapanterarossa_theme_suggestions_views_view_unformatted_alter(array &$s
   }
 }
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function lapanterarossa_form_commerce_checkout_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Modify the email input element.
+  $form['contact_information']['email']['#size'] = 50;
+}
+
+

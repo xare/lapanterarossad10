@@ -126,6 +126,39 @@ input[type="email"]{
   height: 2.5rem;
 }
 
+// Checkout email field
+#edit-contact-information-email, #edit-contact-information-email-confirm {
+  width: 100%;
+}
+
+h5.fieldset-legend {
+  font-family: $title-family;
+  font-weight: $title-weight;
+  font-size: 1.5rem;
+  text-transform: capitalize;
+}
+
+//Sitewide alert
+dialog {
+  z-index: 99999;
+  border-radius: 0.25 rem;
+  background-color: $primary;
+  color: white;
+  border:3px solid white;
+  width:50%;
+  font-size:18px;
+  line-height: 24px;
+  text-align:justify;
+}
+dialog a.btn{
+  margin: 1rem auto !important;
+  display: block !important;
+  width: 8rem !important;
+}
+
+dialog::backdrop {
+  background-color: hsla(332, 28%, 62%, 0.52);
+}
 
 //CUSTOM STYLES FOR WEBFORM BUTTONS
 

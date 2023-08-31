@@ -1,0 +1,12 @@
+name: Commerce Cart Estimate
+type: module
+description: 'Defines a form for estimating taxes and shipping rates on the cart form.'
+package: Commerce (contrib)
+core_version_requirement: ^9.3 || ^10
+dependencies:
+  - commerce_shipping:commerce_shipping
+
+# Information added by Drupal.org packaging script on 2022-09-07
+version: '2.0.0'
+project: 'commerce_cart_estimate'
+datestamp: 1662565079

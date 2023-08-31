@@ -59,6 +59,8 @@ base:
         weight: -10
       css/components/ui-dialog.css:
         weight: -10
+  js:
+    dist/js/custom.min.js: {}
 dialog:
   version: VERSION
   css:

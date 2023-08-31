@@ -19,6 +19,7 @@
         "drupal/antibot": "^2.0",
         "drupal/commerce": "^2.33",
         "drupal/commerce_api": "^1.0@RC",
+        "drupal/commerce_cart_estimate": "^2.0",
         "drupal/commerce_product_tax": "^1.0",
         "drupal/commerce_shipping": "^2.6",
         "drupal/config_update": "^2.0@alpha",
