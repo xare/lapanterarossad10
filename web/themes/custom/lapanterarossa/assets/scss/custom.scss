@@ -225,4 +225,14 @@ dialog::backdrop {
       display: block;
       margin: 5px 0;
     }
+
+    //Sitewide alert
+    dialog {
+      width:90%;
+      font-size:12px;
+    }
+    dialog h3{
+      font-size:16px;
+      text-align: center;
+    }
   }
