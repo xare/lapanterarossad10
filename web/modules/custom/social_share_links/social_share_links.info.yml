@@ -1,0 +1,9 @@
+name: 'Social Share Links'
+type: module
+description: 'Provides a block with customizable social media sharing links.'
+core_version_requirement: ^10
+package: Custom
+dependencies:
+  - drupal:block
+version: '1.0'
+project: 'social_share_links'

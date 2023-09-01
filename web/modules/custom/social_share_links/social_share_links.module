@@ -1,0 +1,45 @@
+<?php
+
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_node_view().
+ */
+function social_share_links_node_view(array &$build, NodeInterface $node, $display, $view_mode) {
+    if ($node->id() === NULL) {
+        return;
+    }
+    // Don't display if the user is currently searching, or in the RSS feed.
+    switch ($view_mode) {
+        case 'search_result':
+        case 'search_index':
+        case 'rss':
+          return;
+      }
+  // Check if the node is of the desired type.
+  if ($view_mode == 'full') {
+    // Add the block to the content.
+    $block = \Drupal::service('plugin.manager.block')
+      ->createInstance('social_share_links')
+      ->build();
+      
+    $build['social_share_links'] = $block;
+  }
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function social_share_links_entity_extra_field_info() {
+    $extra = [];
+    foreach (\Drupal\node\Entity\NodeType::loadMultiple() as $bundle) {
+      $extra['node'][$bundle->id()]['display']['social_share_links'] = [
+        'label' => t('Social Share Links'),
+        'description' => t('Provides links for sharing content on social networks.'),
+        'weight' => 100, // Adjust the weight as required.
+        'visible' => TRUE,
+      ];
+    }
+    return $extra;
+  }
+  

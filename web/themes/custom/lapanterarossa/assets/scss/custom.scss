@@ -150,10 +150,15 @@ dialog {
   line-height: 24px;
   text-align:justify;
 }
-dialog a.btn{
-  margin: 1rem auto !important;
-  display: block !important;
-  width: 8rem !important;
+dialog p strong{
+  color:white;
+}
+dialog p a{
+  color:#c493aa;
+}
+dialog a.button{
+  background: white !important;
+  border: 1px solid white !important;
 }
 
 dialog::backdrop {

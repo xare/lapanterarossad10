@@ -238,6 +238,15 @@ html {
     }
 }
 
+.rrss_sharelinks{
+    display: flex;
+    align-items: center;
+    margin-top: .5rem;
+    li{
+        padding: 0 0;
+    }
+}
+
 .facebook{
     display: block;
     width: 32px;
@@ -283,6 +292,21 @@ html {
         background-size: cover;
     }
 }
+.meneame{
+    @extend .facebook;
+    &::before{
+        background:url(../../images/icons/meneame.svg);
+        background-size: cover;
+    }
+}
+.email{
+    @extend .facebook;
+    &::before{
+        background:url(../../images/icons/email.svg);
+        background-size: cover;
+    }
+}
+
 
 
 //Colophon

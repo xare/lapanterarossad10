@@ -24,18 +24,20 @@
 
 <div class="detail">
   {# <div class="columns event-detail is-multiline"> #}
-    <{{ outer_wrapper }}{{ attributes.addClass(layout_class, 'ds-2col-fluid', 'clearfix', 'columns', 'event-detail', 'is-multiline') }}>
+    {# <{{ outer_wrapper }}{{ attributes.addClass(layout_class, 'ds-2col-fluid', 'clearfix', 'columns', 'event-detail', 'is-multiline') }}> #}
+    <{{ outer_wrapper }}{{ attributes.addClass(layout_class, 'clearfix', 'columns', 'event-detail', 'is-multiline') }}>
 
     {{ title_suffix.contextual_links }}
 
     {% if left %}
-      <{{ left_wrapper }}{{ left_attributes.addClass('group-left', 'column', 'is-3-tablet') }}>
+      {# <{{ left_wrapper }}{{ left_attributes.addClass('group-left', 'column', 'is-3-tablet') }}> #}
+      <{{ left_wrapper }}{{ left_attributes.addClass('column', 'is-3-tablet') }}>
         {{ left }}
       </{{ left_wrapper }}>
     {% endif %}
 
     {% if right %}
-      <{{ right_wrapper }}{{ right_attributes.addClass('group-right', 'column', 'is-9-tablet', 'detail-content') }}>
+      <{{ right_wrapper }}{{ right_attributes.addClass('column', 'is-9-tablet', 'detail-content') }}>
         {{ right }}
       </{{ right_wrapper }}>
     {% endif %}

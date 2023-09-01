@@ -1,0 +1,6 @@
+services:
+  social_share_links.block:
+    class: Drupal\social_share_links\Plugin\Block\SocialShareLinksBlock
+    arguments: ['@current_route_match']
+    tags:
+      - { name: block }
