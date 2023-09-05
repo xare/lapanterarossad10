@@ -19,7 +19,7 @@
           modal.close();
         });
       modal.addEventListener("click", event => {
-        console.info(event);
+
         const modalDimensions = modal.getBoundingClientRect()
         if (
           event.clientX < modalDimensions.left ||

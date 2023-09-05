@@ -62,8 +62,7 @@
           });
 
         function openDetails(event) {
-          console.info($details);
-          console.info($a);
+
           if (type === 'modal') {
             $details.dialog('open');
           }
