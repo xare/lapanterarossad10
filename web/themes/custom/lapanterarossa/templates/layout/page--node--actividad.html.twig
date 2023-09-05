@@ -59,6 +59,27 @@
   {# <div class="container is-max-desktop"> #}
     <div class="navbar-brand">
       {{ page.brand }}
+      <a class="navbar-item logo-tiny" href="index.html" title="Ir a la página de inicio">
+          <img src="{{ base_path ~ 'themes/custom/lapanterarossa' }}/dist/images/icons/logo-icon.svg" alt="La Pantera Rossa" class="logo-icon">
+      </a>
+      <div class="navbar-touch is-hidden-desktop">
+        <a class="navbar-item is-user">
+          <i class="material-symbols-outlined">
+            account_circle
+          </i>
+        </a>
+        <a class="navbar-item is-cart">
+          <p class="cart-items">2</p>
+          <i class="material-symbols-outlined">
+            shopping_bag
+          </i>
+        </a>
+      </div><!-- /navbar-mobile -->
+      <span class="navbar-burger burger" data-target="navMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+      </span>
     </div><!-- /navbar-brand -->
     <div id="navMenu" class="navbar-menu">
       <div class="navbar-end">

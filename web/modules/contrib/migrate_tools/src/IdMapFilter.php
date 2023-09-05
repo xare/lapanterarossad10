@@ -213,7 +213,7 @@ class IdMapFilter extends \FilterIterator implements MigrateIdMapInterface {
   public function currentSource(): array {
     $map = $this->getInnerIterator();
     \assert($map instanceof MigrateIdMapInterface);
-    return $map->currentSource();
+    return $map->currentSource() ?? [];
   }
 
   /**

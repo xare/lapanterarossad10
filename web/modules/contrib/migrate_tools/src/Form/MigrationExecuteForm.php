@@ -11,6 +11,7 @@ use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Plugin\MigrationPluginManagerInterface;
 use Drupal\migrate_tools\MigrateBatchExecutable;
+use Drupal\migrate_tools\MigrateTools;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -153,6 +154,21 @@ class MigrationExecuteForm extends FormBase {
       '#title' => $this->t('Limit to:'),
       '#size' => 10,
       '#description' => $this->t('Set a limit of how many items to process for each migration task.'),
+      '#min' => 1,
+    ];
+
+    $form['options']['idlist'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('ID List'),
+      '#maxlength' => 255,
+      '#size' => 60,
+      '#pattern' => '^[0-9]+(' . MigrateTools::DEFAULT_ID_LIST_DELIMITER . '[0-9]+)?(,?[0-9]+(' . MigrateTools::DEFAULT_ID_LIST_DELIMITER . '[0-9]+)?)*$',
+      '#description' => $this->t('Comma-separated list of IDs to process.'),
+      '#states' => [
+        'enabled' => [
+          ':input[name="operation"]' => [['value' => 'import'], 'or', ['value' => 'rollback']],
+        ],
+      ],
     ];
 
     return $form;
@@ -162,29 +178,6 @@ class MigrationExecuteForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-
-    $operation = $form_state->getValue('operation');
-
-    if ($form_state->getValue('limit')) {
-      $limit = $form_state->getValue('limit');
-    }
-    else {
-      $limit = 0;
-    }
-
-    if ($form_state->getValue('update')) {
-      $update = $form_state->getValue('update');
-    }
-    else {
-      $update = 0;
-    }
-    if ($form_state->getValue('force')) {
-      $force = $form_state->getValue('force');
-    }
-    else {
-      $force = 0;
-    }
-
     $migration = $this->getRouteMatch()->getParameter('migration');
     if ($migration) {
       $migration_id = $migration->id();
@@ -192,40 +185,24 @@ class MigrationExecuteForm extends FormBase {
       $migration_plugin = $this->migrationPluginManager->createInstance($migration_id, $migration->toArray());
       $migrateMessage = new MigrateMessage();
 
-      switch ($operation) {
+      switch ($form_state->getValue('operation')) {
         case 'import':
-
-          $options = [
-            'limit' => $limit,
-            'update' => $update,
-            'force' => $force,
-          ];
-
-          $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
+          $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $this->buildOptions($form_state));
           $executable->batchImport();
-
           break;
 
         case 'rollback':
-
-          $options = [
-            'limit' => $limit,
-            'update' => $update,
-            'force' => $force,
-          ];
-
-          $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
+          $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $this->buildOptions($form_state));
           $status = $executable->rollback();
           if ($status === MigrationInterface::RESULT_COMPLETED) {
             $this->messenger()->addStatus($this->t('Rollback completed', ['@id' => $migration_id]));
           }
           else {
-            $this->messenger()->addError($this->t('Rollback of @name migration failed.', ['@name' => $migration_id]));
+            $this->messenger()->addError($this->t('Rollback of !name migration failed.', ['!name' => $migration_id]));
           }
           break;
 
         case 'stop':
-
           $migration_plugin->interruptMigration(MigrationInterface::RESULT_STOPPED);
           $status = $migration_plugin->getStatus();
           switch ($status) {
@@ -257,11 +234,32 @@ class MigrationExecuteForm extends FormBase {
             $this->messenger()->addStatus($this->t('Migration @id reset to Idle', ['@id' => $migration_id]));
           }
           $migration_plugin->setStatus(MigrationInterface::STATUS_IDLE);
-
           break;
-
       }
     }
+  }
+
+  /**
+   * Build migrate execute options from the submitted form values.
+   *
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   Options array for the migrate execution.
+   */
+  protected function buildOptions(FormStateInterface $form_state) {
+    $options = [
+      'limit' => $form_state->getValue('limit') ?: 0,
+      'update' => $form_state->getValue('update') ?: 0,
+      'force' => $form_state->getValue('force') ?: 0,
+    ];
+
+    if ($idlist = $form_state->getValue('idlist')) {
+      $options['idlist'] = $idlist;
+    }
+
+    return $options;
   }
 
 }

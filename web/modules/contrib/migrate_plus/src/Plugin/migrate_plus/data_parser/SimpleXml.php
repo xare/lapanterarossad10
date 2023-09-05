@@ -10,6 +10,11 @@ use Drupal\migrate_plus\DataParserPluginBase;
 /**
  * Obtain XML data for migration using the SimpleXML API.
  *
+ * SimpleXML parses the whole file into memory, which allows using XPath
+ * expression in the item selector. For large XML sources it results in
+ * consuming lots of memory, which can be undesirable. If you run into memory
+ * issues, then consider using the 'xml' data parser.
+ *
  * @DataParser(
  *   id = "simple_xml",
  *   title = @Translation("Simple XML")
@@ -70,7 +75,7 @@ class SimpleXml extends DataParserPluginBase {
       foreach ($this->fieldSelectors() as $field_name => $xpath) {
         foreach ($target_element->xpath($xpath) as $value) {
           if ($value->children() && !trim((string) $value)) {
-            $this->currentItem[$field_name] = $value;
+            $this->currentItem[$field_name][] = $value;
           }
           else {
             $this->currentItem[$field_name][] = (string) $value;

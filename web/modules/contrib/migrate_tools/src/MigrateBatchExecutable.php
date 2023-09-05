@@ -33,6 +33,13 @@ class MigrateBatchExecutable extends MigrateExecutable {
    */
   protected int $checkDependencies = 0;
 
+  /**
+   * The ID list as single string expression.
+   *
+   * @var string
+   */
+  protected string $idlistExpression = '';
+
   protected bool $syncSource = FALSE;
   protected $batchContext;
   protected array $configuration = [];
@@ -57,6 +64,10 @@ class MigrateBatchExecutable extends MigrateExecutable {
 
     if (isset($options['configuration'])) {
       $this->configuration = $options['configuration'];
+    }
+
+    if (isset($options['idlist'])) {
+      $this->idlistExpression = $options['idlist'];
     }
 
     parent::__construct($migration, $message, $options);
@@ -95,6 +106,7 @@ class MigrateBatchExecutable extends MigrateExecutable {
       'update' => $this->updateExistingRows,
       'force' => $this->checkDependencies,
       'sync' => $this->syncSource,
+      'idlist' => $this->idlistExpression ?: NULL,
       'configuration' => $this->configuration,
     ]);
 
@@ -130,7 +142,16 @@ class MigrateBatchExecutable extends MigrateExecutable {
     foreach ($migrations as $migration) {
 
       if (!empty($options['update'])) {
-        $migration->getIdMap()->prepareUpdate();
+        if (empty($options['idlist'])) {
+          $migration->getIdMap()->prepareUpdate();
+        }
+        else {
+          $source_id_values_list = MigrateTools::buildIdList($options);
+          $keys = array_keys($migration->getSourcePlugin()->getIds());
+          foreach ($source_id_values_list as $source_id_values) {
+            $migration->getIdMap()->setUpdate(array_combine($keys, $source_id_values));
+          }
+        }
       }
 
       if (!empty($options['force'])) {
@@ -298,5 +319,13 @@ class MigrateBatchExecutable extends MigrateExecutable {
     // @todo Maybe we need some other more sophisticated logic here?
     return ceil($context['sandbox']['total'] / 100);
   }
+
+  /**
+   * Suppress progress messages since we are executing via batch UI.
+   *
+   * @param bool $done
+   *   TRUE if this is the last items to process. Otherwise FALSE.
+   */
+  protected function progressMessage($done = TRUE) {}
 
 }

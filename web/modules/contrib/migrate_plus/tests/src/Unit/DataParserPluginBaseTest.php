@@ -76,7 +76,7 @@ final class DataParserPluginBaseTest extends MigrateTestCase {
 
     return $this->getMockBuilder(DataParserPluginBaseMock::class)
       ->setConstructorArgs([$configuration, $plugin_id, $plugin_definition])
-      ->setMethods(['openSourceUrl'])
+      ->onlyMethods(['openSourceUrl'])
       ->getMockForAbstractClass();
   }
 

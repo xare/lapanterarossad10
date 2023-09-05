@@ -12,21 +12,23 @@
     }
     const closeButton = document.querySelector("[data-modal-close]");
     const modal = document.querySelector("[data-modal]");
-    modal.showModal();
-    if(closeButton)
-      closeButton.addEventListener('click', () => {
-        modal.close();
+    if(null !== modal) {
+      modal.showModal();
+      if(closeButton)
+        closeButton.addEventListener('click', () => {
+          modal.close();
+        });
+      modal.addEventListener("click", event => {
+        console.info(event);
+        const modalDimensions = modal.getBoundingClientRect()
+        if (
+          event.clientX < modalDimensions.left ||
+          event.clientX > modalDimensions.right ||
+          event.clientY < modalDimensions.top ||
+          event.clientY > modalDimensions.bottom
+        ) {
+          modal.close()
+        }
       });
-    modal.addEventListener("click", event => {
-      console.info(event);
-      const modalDimensions = modal.getBoundingClientRect()
-      if (
-        event.clientX < modalDimensions.left ||
-        event.clientX > modalDimensions.right ||
-        event.clientY < modalDimensions.top ||
-        event.clientY > modalDimensions.bottom
-      ) {
-        modal.close()
-      }
-    });
+    }
 });

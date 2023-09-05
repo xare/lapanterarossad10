@@ -10,6 +10,11 @@ use Drupal\migrate_plus\DataParserPluginBase;
 /**
  * Obtain XML data for migration using the XMLReader pull parser.
  *
+ * XMLReader reader performs incremental parsing of an XML file. This allows
+ * parsing very large XML sources (e.g. 200MB WordPress dumps), which reduces
+ * the memory usage and increases the performance. The disadvantage is that it's
+ * not possible to use XPath search across the entire source.
+ *
  * @DataParser(
  *   id = "xml",
  *   title = @Translation("XML")
@@ -238,7 +243,7 @@ class Xml extends DataParserPluginBase {
           // and has children then return the whole object for the process
           // plugin or other row manipulation.
           if ($value->children() && !trim((string) $value)) {
-            $this->currentItem[$field_name] = $value;
+            $this->currentItem[$field_name][] = $value;
           }
           else {
             $this->currentItem[$field_name][] = (string) $value;

@@ -82,8 +82,6 @@ class MigrateExecutable extends MigrateExecutableBase {
 
   /**
    * List of event listeners we have registered.
-   *
-   * @var string[][]|$this[][]
    */
   protected $listeners = [];
 
@@ -112,8 +110,8 @@ class MigrateExecutable extends MigrateExecutableBase {
       'onMapDelete',
     ];
     $this->listeners[MigrateEvents::POST_IMPORT] = [
-        $this,
-        'onPostImport',
+      $this,
+      'onPostImport',
     ];
     $this->listeners[MigrateEvents::POST_ROLLBACK] = [
       $this,

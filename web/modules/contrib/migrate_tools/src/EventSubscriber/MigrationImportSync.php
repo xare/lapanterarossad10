@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\migrate_tools\EventSubscriber;
 
+use Drupal\Core\State\StateInterface;
 use Drupal\migrate\Event\MigrateEvents;
 use Drupal\migrate\Event\MigrateImportEvent;
 use Drupal\migrate\Event\MigrateRollbackEvent;
@@ -21,13 +22,24 @@ class MigrationImportSync implements EventSubscriberInterface {
   protected EventDispatcherInterface $dispatcher;
 
   /**
+   * The state key/value store.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected StateInterface $state;
+
+  /**
    * MigrationImportSync constructor.
    *
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher
    *   The event dispatcher.
+   * @param Drupal\Core\State\StateInterface $state
+   *   The Key/Value Store to use for tracking synced source rows.
    */
-  public function __construct(EventDispatcherInterface $dispatcher) {
+  public function __construct(EventDispatcherInterface $dispatcher, StateInterface $state) {
     $this->dispatcher = $dispatcher;
+    $this->state = $state;
+    $this->state->set('migrate_tools_sync', []);
   }
 
   /**
@@ -48,22 +60,38 @@ class MigrationImportSync implements EventSubscriberInterface {
   public function sync(MigrateImportEvent $event): void {
     $migration = $event->getMigration();
     if (!empty($migration->syncSource)) {
-      $id_map = $migration->getIdMap();
-      $id_map->prepareUpdate();
+
+      // Loop through the source to register existing source ids.
+      // @see migrate_tools_migrate_prepare_row().
       // Clone so that any generators aren't initialized prematurely.
       $source = clone $migration->getSourcePlugin();
       $source->rewind();
-      $source_id_values = [];
+
       while ($source->valid()) {
-        $source_id_values[] = $source->current()->getSourceIdValues();
         $source->next();
       }
+
+      $source_id_values = $this->state->get('migrate_tools_sync', []);
+
+      $id_map = $migration->getIdMap();
       $id_map->rewind();
       $destination = $migration->getDestinationPlugin();
+
       while ($id_map->valid()) {
         $map_source_id = $id_map->currentSource();
-        if (!in_array($map_source_id, $source_id_values, TRUE)) {
-          $destination_ids = $id_map->currentDestination();
+
+        foreach ($source->getIds() as $id_key => $id_config) {
+          if ($id_config['type'] === 'string') {
+            $map_source_id[$id_key] = (string) $map_source_id[$id_key];
+          }
+          elseif ($id_config['type'] === 'integer') {
+            $map_source_id[$id_key] = (int) $map_source_id[$id_key];
+          }
+        }
+
+        $destination_ids = $id_map->currentDestination();
+
+        if ($destination_ids !== NULL && $destination_ids !== [] && !in_array($map_source_id, $source_id_values, TRUE)) {
           $this->dispatchRowDeleteEvent(MigrateEvents::PRE_ROW_DELETE, $migration, $destination_ids);
           if (class_exists(MigratePlusEvents::class)) {
             $this->dispatchRowDeleteEvent(MigratePlusEvents::MISSING_SOURCE_ITEM, $migration, $destination_ids);
