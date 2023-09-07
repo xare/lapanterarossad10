@@ -27,6 +27,7 @@ class CustomFilters extends AbstractExtension {
    *   The cleaned string.
    */
   public function cleanUrl($string) {
-    return preg_replace('/[\/\-\s]+/', '-', $string);
+
+    return $string === null ? '': preg_replace('/[\/\-\s]+/', '-',  $string) ;
   }
 }

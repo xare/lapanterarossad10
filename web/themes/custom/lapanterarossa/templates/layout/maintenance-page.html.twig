@@ -9,8 +9,8 @@
  * @see template_preprocess_maintenance_page()
  */
 #}
-<div class="layout-container">
-
+<div class="layout-container layout-maintenance-container">
+  <div>
   <header role="banner">
     {% if logo %}
       <a href="{{ front_page }}" title="{{ 'Home'|t }}" rel="home">
@@ -61,5 +61,5 @@
       {{ page.footer }}
     </footer>
   {% endif %}
-
+</div>
 </div>{# /.layout-container #}

@@ -187,23 +187,27 @@ function lapanterarossa_form_commerce_checkout_form_alter(&$form, FormStateInter
   $form['contact_information']['email']['#size'] = 50;
 }
 
-/* function lapanterarossa_form_alter(&$form, &$form_state, $form_id) {
-  // Check if it's the specific form you want to alter.
-  if ($form_id == 'webform_submission_formulario_bono_libreria_add_form') { // Replace 'YOUR_FORM_ID' with your webform's specific form id.
-    
-    if (isset($form['elements']['terms_of_service'])) {
-      $form['elements']['terms_of_service']['#attributes']['class'][] = 'custom-terms-of-service'; 
-      $form['elements']['terms_of_service']['#title_display'] = 'after';
-      // Add a custom property to the label.
-      $form['elements']['terms_of_service']['#attributes']['class'][] = 'custom-terms-label';
-    }
+function lapanterarossa_form_user_login_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $form['pass']['#size'] = 30;  // Change size to 30
+   // Check if 'class' attribute is set, if not initialize it as an array
+  if (!isset($form['pass']['#attributes']['class'])) {
+    $form['pass']['#attributes']['class'] = [];
   }
+
+  // Add the new class
+  $form['pass']['#attributes']['class'][] = 'input';
 }
 
-function lapanterarossa_theme_suggestions_form_element_label_alter(array &$suggestions, array $variables) {
-  if (isset($variables['element']['#id']) && $variables['element']['#id'] == 'edit-terms-of-service') {
-    $suggestions[] = 'form_element_label__terms_of_service';
-  }
-}
+function lapanterarossa_form_user_register_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
 
- */
+
+  $form['account']['mail']['#size'] = 30;  // Change size to 30
+   // Check if 'class' attribute is set, if not initialize it as an array
+  if (!isset($form['account']['mail']['#attributes']['class'])) {
+    $form['account']['mail']['#attributes']['class'] = [];
+  }
+
+  // Add the new class
+  $form['account']['mail']['#attributes']['class'][] = 'input';
+
+}

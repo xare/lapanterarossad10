@@ -219,6 +219,21 @@ dialog::backdrop {
     border-color: #ccc;
     color: #999;
   }
+
+  //maintenance page
+
+  .layout-maintenance-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  .layout-maintenance-container div {
+    width: 50%;
+    height: 50%;
+    text-align:center;
+  }
   
   @media (max-width: 600px) {
     .webform-custom-options-buttons {
