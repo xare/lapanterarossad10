@@ -1,0 +1,7 @@
+geslib.admin:
+  path: '/admin/config/geslib/store-products'
+  defaults:
+    _form: '\Drupal\geslib\Form\StoreProductsForm'
+    _title: 'Store Products'
+  requirements:
+    _permission: 'administer site configuration'

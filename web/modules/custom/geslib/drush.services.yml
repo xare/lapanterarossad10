@@ -34,7 +34,7 @@ services:
       - { name: drush.command }
   geslib.storeProducts:
     class: Drupal\geslib\Command\GeslibStoreProductsCommand
-    arguments: ['@logger.factory']
+    arguments: ['@geslib.drupal_manager', '@logger.factory']
     tags:
       - { name: drush.command }
   geslib.deleteAllProducts:
@@ -47,3 +47,6 @@ services:
     arguments: ['@logger.factory']
     tags:
       - { name: drush.command }
+  geslib.drupal_manager:
+    class: Drupal\geslib\Api\GeslibApiDrupalManager
+    arguments: ['@logger.factory']

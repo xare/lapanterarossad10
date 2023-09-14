@@ -29,8 +29,11 @@ class GeslibStoreProductsCommand extends DrushCommands {
      * @param  mixed $logger_factory
      * @return void
      */
-    public function __construct( LoggerChannelFactoryInterface $logger_factory) {
-        $this->drupal = new GeslibApiDrupalManager($logger_factory);
+    public function __construct(
+        GeslibApiDrupalManager $drupal_manager, 
+        LoggerChannelFactoryInterface $logger_factory) {
+        $this->drupal = $drupal_manager;
+        $this->logger_factory = $logger_factory;
     }
 
     /**
@@ -42,5 +45,9 @@ class GeslibStoreProductsCommand extends DrushCommands {
      */
     public function storeProducts() {
         $this->drupal->storeProducts();
+        $this->drupal->setGeslibLogQueued();
+        $this->drupal->emptyGeslibLines();
+        //Once the last line has been read now we will have to delete all rows from geslib_lines and set geslib_log state to queued.
+        
     }
 }

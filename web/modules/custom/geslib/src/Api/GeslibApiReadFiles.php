@@ -60,10 +60,10 @@ class GeslibApiReadFiles {
 	/**
 	 * readFolder
 	 *
-	 * @return void
+	 * @return mixed
 	 */
-	public function readFolder(){
-		
+	public function readFolder():mixed {
+		echo $this->mainFolderPath;
 		$files = glob($this->mainFolderPath . 'INTER*');
 		var_dump(count($files));
 		if ( count($files) == 0 ) {
@@ -84,11 +84,8 @@ class GeslibApiReadFiles {
 	}
 
 	/**
-     * Process ZIP files in the HISTO folder: uncompress, read, compress, and insert data into the database.
-     */    
-    /**
      * processZipFiles
-     *
+     * Process ZIP files in the HISTO folder: uncompress, read, compress, and insert data into the database.
      * @return void
      */
     public function processZipFiles() {
@@ -96,7 +93,6 @@ class GeslibApiReadFiles {
         if (is_dir($this->histoFolderPath)) {
             // Get all ZIP files in the "HISTO" folder
             $zipFiles = glob($this->histoFolderPath . 'INTER*.zip');
-
             // Iterate through each ZIP file
             foreach ($zipFiles as $zipFile) {
                 $this->processZipFile($zipFile);
@@ -105,17 +101,13 @@ class GeslibApiReadFiles {
     }
 
 	/**
+	 * processZipFile
      * Process a ZIP file: uncompress, read its contents, compress again, and insert data into the database.
      *
      * @param string $zipFilePath Path to the ZIP file.
-     */    
-    /**
-     * processZipFile
-     *
-     * @param  mixed $zipFilePath
      * @return void
      */
-    private function processZipFile($zipFilePath) {
+    private function processZipFile( string $zipFilePath ) {
         // Uncompress the ZIP file to a temporary directory
         $tempDir = tempnam(sys_get_temp_dir(), '');
         $zip = new ZipArchive();
@@ -152,13 +144,13 @@ class GeslibApiReadFiles {
 			rmdir($tempDir);
 		}
 
-	// Insert data into the database table for the compressed file
-	$startDate = date('Y-m-d H:i:s');
+		// Insert data into the database table for the compressed file
+		$startDate = date('Y-m-d H:i:s');
 
-	// Check if the filename already exists in the database
-	if (!$this->drupal->isFilenameExists($uncompressedFileName)) {
-		// Insert data into the database table
-		$this->drupal->insertLogData($uncompressedFileName, 'logged', $linesCount);
+		// Check if the filename already exists in the database
+		if (!$this->drupal->isFilenameExists($uncompressedFileName)) {
+			// Insert data into the database table
+			$this->drupal->insertLogData($uncompressedFileName, 'logged', $linesCount);
 		}
 	}
 
@@ -193,7 +185,7 @@ class GeslibApiReadFiles {
 	 * @param  mixed $filename
 	 * @return int|false
 	 */
-	public function countLines( $filename ) {
+	public function countLines( string $filename ):mixed{
 		// Check if the file exists
 		if( file_exists( $filename ) )
 			return count( file( $filename ) );

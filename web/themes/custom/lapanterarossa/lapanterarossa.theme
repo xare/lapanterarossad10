@@ -1,5 +1,6 @@
 <?php
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Twig\TwigFunction;
 /**
@@ -187,7 +188,7 @@ function lapanterarossa_form_commerce_checkout_form_alter(&$form, FormStateInter
   $form['contact_information']['email']['#size'] = 50;
 }
 
-function lapanterarossa_form_user_login_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function lapanterarossa_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $form['pass']['#size'] = 30;  // Change size to 30
    // Check if 'class' attribute is set, if not initialize it as an array
   if (!isset($form['pass']['#attributes']['class'])) {
@@ -198,7 +199,7 @@ function lapanterarossa_form_user_login_form_alter(&$form, \Drupal\Core\Form\For
   $form['pass']['#attributes']['class'][] = 'input';
 }
 
-function lapanterarossa_form_user_register_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function lapanterarossa_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 
 
   $form['account']['mail']['#size'] = 30;  // Change size to 30

@@ -133,10 +133,14 @@ class BookService {
                     'price' => $result->price, // Add the price to your results array
                 ];
             }
+            return [
+                'books' => $related_books,
+                'pager' => $pager, // Get the pager object for the results.
+            ];
     }
     return [
         'books' => $related_books,
-        'pager' => $pager, // Get the pager object for the results.
+        'pager' => '', // Get the pager object for the results.
     ];
   }
 

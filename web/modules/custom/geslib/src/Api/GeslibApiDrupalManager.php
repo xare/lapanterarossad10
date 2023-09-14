@@ -587,6 +587,27 @@ class GeslibApiDrupalManager {
                 ->fetchAll();
     }
 
+    public function emptyGeslibLines(){
+        try {
+            $this->database->truncate('geslib_lines')->execute();
+        } catch (\Exception $exception){
+            \Drupal::messenger()->addError('Could not empty geslib_lines table: ' . $exception->getMessage());
+                $this->logger->error('Could not empty geslib_lines table: ' . $exception->getMessage());
+        }
+    }
+
+    public function setGeslibLogQueued() {
+        try {
+            $this->database->update('geslib_log')
+                ->fields( [ 'queued' => 1 ] )
+                ->condition('queued', 0)
+                ->execute();
+        } catch (\Exception $exception){
+            \Drupal::messenger()->addError('Could not set geslib_log queue to 1: '. $exception->getMessage());
+            $this->logger->error('Could not set geslib_log queue to 1: '.$exception->getMessage());
+        }
+    }
+
     
     
 
