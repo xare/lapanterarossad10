@@ -4,3 +4,15 @@ geslib.admin:
   route_name: geslib.admin
   description: 'Configure Geslib'
   weight: 100
+geslib.admin.log:
+  title: 'Geslib Log'
+  parent: geslib.admin
+  route_name: geslib.admin.log
+  description: See geslib_log table
+  weight: 100
+geslib.admin.lines:
+  title: 'Geslib Lines'
+  parent: geslib.admin
+  route_name: geslib.admin.lines
+  description: See geslib_lines table
+  weight: 100

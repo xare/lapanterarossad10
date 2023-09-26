@@ -109,43 +109,52 @@ function lapanterarossa_preprocess_field(&$variables) {
   //error_log('Preprocessing field: ' . $variables['element']['#field_name']);
   $field_name = $variables['element']['#field_name'];
   // Check for field name and bundle (content type).
-  if ($field_name == 'field_act_fecha_final' && $variables['element']['#bundle'] == 'actividad') {
-    // Create a DateTime object from the attribute
-    $date = new \DateTime($variables['items'][0]['content']['#text']);
-    
-    // Format the date and time as desired
-    $variables['day'] = $date->format('j');
-    $variables['month'] = $date->format('F');
-    $variables['time'] = $date->format('H:i');
-    $variables['day_of_week'] = $date->format('l');
+  if (
+      ($field_name == 'field_act_fecha_final' 
+      && $variables['element']['#bundle'] == 'actividad') 
+      || 
+      ($field_name == 'field_fecha_de_inicio'
+      && $variables['element']['#bundle'] == 'actividad_recurrente')
+      || 
+      ($field_name == 'field_fecha_final' 
+      && $variables['element']['#bundle'] == 'actividad_recurrente') 
+      ) {
+        // Create a DateTime object from the attribute
+        $date = new \DateTime($variables['items'][0]['content']['#text']);
+      
+        // Format the date and time as desired
+        $variables['day'] = $date->format('j');
+        $variables['month'] = $date->format('F');
+        $variables['time'] = $date->format('H:i');
+        $variables['day_of_week'] = $date->format('l');
    
-    // Convert month and day_of_week to Spanish (you may want to handle other languages differently)
-    $months = [
-      'January' => 'Enero', 
-      'February' => 'Febrero',
-      'March' => 'Marzo',
-      'April' => 'Abril',
-      'May' => 'Mayo',
-      'June' => 'Junio',
-      'July' => 'Julio',
-      'August' => 'Agosto',
-      'September' => 'Septiembre',
-      'October' => 'Octubre',
-      'November' => 'Noviembre',
-      'December' => 'Diciembre',
-    ];
-    $days_of_week = [
-      'Monday' => 'Lunes', 
-      'Tuesday' => 'Martes',
-      'Wednesday' => 'Miércoles',
-      'Thursday' => 'Jueves',
-      'Friday' => 'Viernes',
-      'Saturday' => 'Sábado',
-      'Sunday' => 'Domingo',
-    ];
+      // Convert month and day_of_week to Spanish (you may want to handle other languages differently)
+      $months = [
+        'January' => 'Enero', 
+        'February' => 'Febrero',
+        'March' => 'Marzo',
+        'April' => 'Abril',
+        'May' => 'Mayo',
+        'June' => 'Junio',
+        'July' => 'Julio',
+        'August' => 'Agosto',
+        'September' => 'Septiembre',
+        'October' => 'Octubre',
+        'November' => 'Noviembre',
+        'December' => 'Diciembre',
+      ];
+      $days_of_week = [
+        'Monday' => 'Lunes', 
+        'Tuesday' => 'Martes',
+        'Wednesday' => 'Miércoles',
+        'Thursday' => 'Jueves',
+        'Friday' => 'Viernes',
+        'Saturday' => 'Sábado',
+        'Sunday' => 'Domingo',
+      ];
 
-    $variables['month'] = $months[$variables['month']] ?? $variables['month'];
-    $variables['day_of_week'] = $days_of_week[$variables['day_of_week']] ?? $variables['day_of_week'];
+      $variables['month'] = $months[$variables['month']] ?? $variables['month'];
+      $variables['day_of_week'] = $days_of_week[$variables['day_of_week']] ?? $variables['day_of_week'];
   }
 }
 

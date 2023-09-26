@@ -1,6 +1,8 @@
 <?php
 
 namespace Drupal\geslib\Api;
+
+use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\Entity\Term;
@@ -137,13 +139,13 @@ class GeslibApiDrupalManager {
     /**
      * insert2geslibLines
      *
-     * @param  mixed $data_array
-     * @return void
+     * @param  array $data_array
+     * @return string
      */
-    public function insert2geslibLines( $data_array ) {
+    public function insert2geslibLines( array $data_array ):string {
         try{
 		    $this->database
-                    ->insert( self::GESLIB_LINES_TABLE)
+                    ->insert( self::GESLIB_LINES_TABLE )
                     ->fields($data_array)
                     ->execute();
             return "the line was inserted in ".self::GESLIB_LINES_TABLE;
@@ -157,25 +159,28 @@ class GeslibApiDrupalManager {
      *
      * @return void
      */
-    public function _readGeslibLinesTable() {
+    private function _readGeslibLinesTable() {
 		$table_name = self::GESLIB_LINES_TABLE;
 		$query = $this->database->select($table_name);
 		$results = $this->database->get_results($query);
 		
 		foreach( $results as $result ) {
-			$this->_storeData($result->type, $result->id, $result->content);
+			$this->_storeData( 
+                $result->type, 
+                $result->id, 
+                $result->content );
 		}
     }
     
     /**
      * updateGeslibLines
      *
-     * @param  mixed $geslib_id
-     * @param  mixed $type
+     * @param  int $geslib_id
+     * @param  string $type
      * @param  mixed $content
-     * @return void
+     * @return mixed
      */
-    public function updateGeslibLines( $geslib_id, $type, $content){
+    public function updateGeslibLines( $geslib_id, $type, $content):mixed {
 		try {
 			$this->database
                 ->update(self::GESLIB_LINES_TABLE)
@@ -192,12 +197,12 @@ class GeslibApiDrupalManager {
     /**
      * insertProductData
      *
-     * @param  mixed $content_array
-     * @param  mixed $action
-     * @param  mixed $log_id
-     * @return void
+     * @param  array $content_array
+     * @param  string $action
+     * @param  int $log_id
+     * @return mixed
      */
-    public function insertProductData($content_array, $action, $log_id) {
+    public function insertProductData(array $content_array, string $action, int $log_id) :mixed {
 		try{
             $this->database
                 ->insert(self::GESLIB_LINES_TABLE)
@@ -210,7 +215,7 @@ class GeslibApiDrupalManager {
                             'queued' => 1
                         ])
                 ->execute();
-                    return "The product data was successfully inserte to geslib lines";
+                    return "The product data was successfully inserted to geslib lines";
                 } catch(\Exception $e) {
                     return "The product data could not be inserted to geslib Lines ".$e->getMessage();
                 }
@@ -219,10 +224,10 @@ class GeslibApiDrupalManager {
     /**
      * getLogId
      *
-     * @param  mixed $filename
+     * @param  string $filename
      * @return void
      */
-    public function getLogId($filename){
+    public function getLogId( string $filename ) {
         return $this->database
                     ->select(self::GESLIB_LOG_TABLE, 't')
                     ->fields('t',['id'])
@@ -230,15 +235,12 @@ class GeslibApiDrupalManager {
                     ->execute()
                     ->fetchField();
 	}
-
-    /** 
-	 * Count the number of rows in the geslib_log and geslib_lines tables
-	 */
 	
 	/**
 	 * countRows
+     * Count the number of rows in the geslib_log and geslib_lines tables
 	 *
-	 * @param  mixed $table
+	 * @param  string $table
 	 * @return void
 	 */
 	public function countRows($table){
@@ -248,12 +250,10 @@ class GeslibApiDrupalManager {
                 ->execute()
                 ->fetchField();
 	}
-
-    /**
-     * Get Editorials from Geslib Lines
-     */    
+    
     /**
      * getEditorialsFromGeslibLines
+     * Get Editorials from Geslib Lines
      *
      * @return void
      */
@@ -271,16 +271,16 @@ class GeslibApiDrupalManager {
     /**
      * _storeData
      *
-     * @param  mixed $type
-     * @param  mixed $geslib_id
+     * @param  string $type
+     * @param  int $geslib_id
      * @param  mixed $content
      * @return void
      */
-    private function _storeData( $type, $geslib_id, $content ) {
+    private function _storeData( string $type, int $geslib_id, $content ) {
 		$store_data=[];
 		$function_name = 'store'.$type[0];
-		if (method_exists($this, $function_name)) {
-			$store_data[] = $this->{$function_name}($geslib_id,$content);
+		if ( method_exists( $this, $function_name )) {
+			$store_data[] = $this->{$function_name}( $geslib_id, $content );
 		} else {
 			$store_data[] = 'EMPTY';
 		}
@@ -308,7 +308,7 @@ class GeslibApiDrupalManager {
     
         if (empty($terms)) {
             // Create a new term
-            $term = \Drupal\taxonomy\Entity\Term::create([
+            $term = \Drupal\taxonomy\Entity\Term::create( [
                 'name' => $term_name,
                 'vid' => 'product_categories',
                 'description' => [
@@ -320,7 +320,7 @@ class GeslibApiDrupalManager {
                     'alias' => '/' . strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', \Drupal::transliteration()->transliterate($term_name, 'es'))),
                 ],
                 'geslib_id' => $product_category->geslib_id,
-            ]);
+            ] );
     
             // Validate the term
             $violations = $term->validate();
@@ -340,7 +340,7 @@ class GeslibApiDrupalManager {
             }
         } else {
             \Drupal::messenger()->addMessage(t('Category already exists'));
-    
+            
             return null;
         }
     }
@@ -396,7 +396,12 @@ class GeslibApiDrupalManager {
     
         return $term;
     }
-
+    
+    /**
+     * storeProducts
+     *
+     * @return void
+     */
     public function storeProducts() {
 		$table = self::GESLIB_LINES_TABLE;
 
@@ -417,37 +422,53 @@ class GeslibApiDrupalManager {
             $i++;
         }
 	}
-    public function storeProduct($geslib_id, $content) {
+    
+    /**
+     * storeProduct
+     *
+     * @param  int $geslib_id
+     * @param  mixed $content
+     * @return void
+     */
+    public function storeProduct( int $geslib_id, $content ) {
         $store = \Drupal::service('commerce_store.default_store_resolver')->resolve();
         $store_id = $store->id();
 
         $content = json_decode($content, true);
         $ean = $content['ean'];
         $author = $content['author'];
+
+        /*
+        * AÑADIR AUTOR
+        */
         if(null !== $author) {
             $vocabulary = \Drupal\taxonomy\Entity\Vocabulary::load('autores');
             
             // Assuming $vocabulary is your Vocabulary object and $author is the term name you want to check.
-            $term_exists = \Drupal::entityQuery('taxonomy_term')
+            $author_exists = \Drupal::entityQuery('taxonomy_term')
                             ->condition('vid', $vocabulary->id())
                             ->condition('name', $author)
                             ->accessCheck(FALSE)
                             ->execute();
-            if (empty($term_exists)) {
-                // Create a new term.
-                $author_term = \Drupal\taxonomy\Entity\Term::create([
-                                    'vid' => $vocabulary->id(),
-                                    'name' => $author,
-                                ]);
-                // Save the term.
-                $author_term->save();
+            if (empty($author_exists)) {
+                // Create a new author.
+                try {
+                    $author_term = \Drupal\taxonomy\Entity\Term::create([
+                                        'vid' => $vocabulary->id(),
+                                        'name' => $author,
+                                    ]);
+                    // Save the term.
+                    $author_term->save();
+                } catch(\Exception $exception){
+                    \Drupal::messenger()->addMessage( 'Impossible to save the author: '.$exception->getMessage() );
+                    \Drupal::logger('geslib')->notice( 'Impossible to save the author: '.$exception->getMessage() );
+                }
             } else {
-                $author_term = Term::load(reset($term_exists));
+                $author_term = Term::load(reset($author_exists));
             }
         
             // Get the term ID.
             $author_term_id = $author_term->id();
-            var_dump($author_term_id);
         }
 
         $num_paginas = $content['num_paginas'];
@@ -497,41 +518,46 @@ class GeslibApiDrupalManager {
         $product->set('field_num_paginas', $num_paginas);
     
         // Save the product variation and product to the database
+        /*
+        * AÑADIR EDITORIAL
+        */
         if (null !== $editorial_geslib_id) {
             // Load the taxonomy terms by the field value of 'geslib_id'.
-            $terms = \Drupal::entityTypeManager()
+            $editorials = \Drupal::entityTypeManager()
                     ->getStorage('taxonomy_term')
                     ->loadByProperties([
                         'vid' => 'editorials',
                         'geslib_id' => $editorial_geslib_id,
                     ]);
-            if ($terms) {
-                $term = reset($terms);
+            if ( $editorials ) {
+                $editorial = reset($editorials);
                 // Make sure we got a Term object before trying to get its ID.
-                if ($term instanceof Term) {
+                if ($editorial instanceof Term) {
                     $product->set('field_editorial', [
                       'target_id' => $term->id(),
                     ]);
                   }
             }
         }
-
+        /*
+        * AÑADIR CATEGORIA
+        */
         if (!empty($content['categories'])) {
             $category_ids = [];
             foreach ($content['categories'] as $key => $value) {
                 $category_geslib_id = intval($key);
                 var_dump("Key: $key, Category ID: $category_geslib_id"); // Add this line to check values
                 // Load the term by the geslib_id field
-                $terms = \Drupal::entityTypeManager()
+                $categories = \Drupal::entityTypeManager()
                         ->getStorage('taxonomy_term')
                         ->loadByProperties([
                             'vid' => 'product_categories',
                             'geslib_id' => $category_geslib_id
                         ]);
                 // If the term is found, retrieve its ID and add to the $category_ids array
-                if ($terms) {
-                    $term = reset($terms);  // Since loadByProperties returns an array, just get the first result.
-                    $category_ids[] = $term->id();
+                if ($categories) {
+                    $category = reset($categories);  // Since loadByProperties returns an array, just get the first result.
+                    $category_ids[] = $category->id();
                 }
             }
 
@@ -540,21 +566,25 @@ class GeslibApiDrupalManager {
                 $product->set('field_categoria', $category_ids);
             }
         }
+        try {
+            $variation->save();
+            $product->save();
 
-        $variation->save();
-        $product->save();
-
-        // Assign the product to the editorial taxonomy term
-        // This assumes that the taxonomy term ID is stored in $editorial_geslib_id, adjust if needed
-        
-    
-        // Assign categories
-       
-        //$this->output->writeln("Stored Product - Title: $book_name, EAN: $ean");
-        return $product;
+            return $product;
+        } catch ( \Exception $exception ) {
+            \Drupal::messenger()->addMessage( 'Impossible to save the product: '.$exception->getMessage() );
+                    \Drupal::logger('geslib')->notice( 'Impossible to save the product: '.$exception->getMessage() );
+        }
     }
-    
-    private function _create_slug($term_name) {
+        
+        
+    /**
+     * _create_slug
+     *
+     * @param  string $term_name
+     * @return string
+     */
+    private function _create_slug( string $term_name ):string {
 		// convert to lowercase
 		$term_name = strtolower($term_name);
 	  
@@ -566,8 +596,15 @@ class GeslibApiDrupalManager {
 	  
 		return $term_slug;
   	}
-
-    public function fetchContent($geslib_id, $type) {
+    
+    /**
+     * fetchContent
+     *
+     * @param  ing $geslib_id
+     * @param  string $type
+     * @return void
+     */
+    public function fetchContent( int $geslib_id, string $type ) {
 
 		return $this->database->select(self::GESLIB_LINES_TABLE,'gl')
                     ->fields('gl',['content'])
@@ -577,7 +614,12 @@ class GeslibApiDrupalManager {
                     ->execute()
                     ->fetchField();
 	}
-    
+        
+    /**
+     * getProductCategoriesFromGeslibLines
+     *
+     * @return void
+     */
     public function getProductCategoriesFromGeslibLines() {
         return $this->database
                 ->select(self::GESLIB_LINES_TABLE, 't')
@@ -586,7 +628,12 @@ class GeslibApiDrupalManager {
                 ->execute()
                 ->fetchAll();
     }
-
+    
+    /**
+     * emptyGeslibLines
+     *
+     * @return void
+     */
     public function emptyGeslibLines(){
         try {
             $this->database->truncate('geslib_lines')->execute();
@@ -595,20 +642,54 @@ class GeslibApiDrupalManager {
                 $this->logger->error('Could not empty geslib_lines table: ' . $exception->getMessage());
         }
     }
-
+    
+    /**
+     * setGeslibLogQueued
+     *
+     * @return void
+     */
     public function setGeslibLogQueued() {
         try {
             $this->database->update('geslib_log')
-                ->fields( [ 'queued' => 1 ] )
-                ->condition('queued', 0)
+                ->fields( [ 
+                    'status' => 'queued',
+                    'end_date' => date('Y-m-d H:i:s'),
+                    ] )
+                ->condition('status', 'logged')
                 ->execute();
+            \Drupal::messenger()->addError('geslib Logger status to queued');
+            $this->logger->error('geslib Logger status to queued');
         } catch (\Exception $exception){
             \Drupal::messenger()->addError('Could not set geslib_log queue to 1: '. $exception->getMessage());
             $this->logger->error('Could not set geslib_log queue to 1: '.$exception->getMessage());
         }
     }
 
-    
-    
+    public function deleteProducts() {
+         // Bootstrap Drupal.
+        
+         $product_storage = \Drupal::entityTypeManager()
+         ->getStorage( 'commerce_product' );
+
+        $batchBuilder = new BatchBuilder();
+            $batchBuilder->setTitle( 'Deleting Commerce products' );
+            $batchBuilder->setFinishCallback( [ $this, 'deleteAllProductsFinish' ] );
+            $batchBuilder->setInitMessage( 'Starting deletion of Commerce products...' );
+            $batchBuilder->setProgressMessage( 'Deleting Commerce products %percentage% completed.' );
+            $batchBuilder->setErrorMessage( 'An error occurred while deleting Commerce products.' );
+        $products = $product_storage->getQuery()->accessCheck(FALSE)->execute();
+
+        $batch_operation = '';
+        // Determine how many products to delete at once.
+        $batchSize = 100;
+        $productsChunks = array_chunk($products, $batchSize);
+        foreach ($productsChunks as $productsChunk) {
+            $batchBuilder->addOperation([$this, 'deleteProducts'], [$productsChunk]);
+        }
+
+        $batch = $batchBuilder->toArray();
+        batch_set($batch);
+        drush_backend_batch_process();
+    }
 
 }

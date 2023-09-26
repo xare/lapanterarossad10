@@ -173,7 +173,6 @@ class GeslibApiLines {
 	public function storeToLines(){
 		// 1. Read the log table
 		$filename = $this->drupal->getLogQueuedFile();
-		var_dump( $filename );
 		$log_id = $this->drupal->getLogId( $filename );
 		// 2. Read the file and store in lines table
 		return $this->readFile($this->mainFolderPath.$filename, $log_id);
@@ -364,6 +363,7 @@ class GeslibApiLines {
 		];
 		
 		$this->drupal->insert2GeslibLines( $data_array );
+		//$this->drupal->setGeslibLogEndDate($log_id);
 	}
 	
 	/**

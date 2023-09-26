@@ -45,18 +45,18 @@
 {# <div class="layout-container"> #}
 {% if page.top_start or page.top_end %}
   <nav class="navbar navbar-top">
-    {# <div class="container is-max-desktop"> #}
+    <div class="container is-fluid">
       <div class="navbar-start is-hidden-touch">
       {{ page.top_start }}
       </div><!-- /navbar-start-->
       <div class="navbar-end">
         {{ page.top_end }}
       </div><!-- /navbar-end-->
-    {# </div> #}
+    </div>
   </nav>
 {% endif %}
 <nav class="navbar navbar-main">
-  {# <div class="container is-max-desktop"> #}
+  <div class="container is-fluid"> 
     <div class="navbar-brand">
       {{ page.brand }}
     </div><!-- /navbar-brand -->
@@ -65,64 +65,20 @@
         {{ page.primary_menu }}
       </div><!-- /navbar-end-->
     </div>
-  {# </div> #}
+  </div>
 </nav>
-<header role="banner">
-  <div class="container is-max-desktop">
-     {#  <div class="columns">
-        <div class="column is-two-thirds">
 
-        </div>
-        <div class="column is-one-sixth">
-          <nav class="navbar navbar-top" role="navigation" aria-label="main navigation">
-            <div class="navbar-menu">
-              <div class="navbar-end">
-                {{page.top_start}}
-               </div>
-            </div>
-          </nav>
-        </div>
-        <div class="column is-one-sixth">
-          <nav class="navbar navbar-top" role="navigation" aria-label="main navigation">
-            <div class="navbar-menu">
-              <div class="navbar-end">
-                {{ page.secondary_menu }}
-              </div>
-            </div>
-          </nav>
-        </div>
-      </div> #}
-  </div>
-</header>
-  {# <nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="container is-max-desktop">
-      <div class="navbar-menu">
-        <div class="navbar-brand">
-          {{ page.header }}
-        </div>
-        <div class="navbar-start">
-          {{ page.primary_menu }}
-        </div>
-      {# <div class="navbar-end">
 
-      </div> #}
-      {#</div>
-    </div>
-  </nav> #}
-
-  <div class="container is-max-desktop">
+  {# <div class="container is-max-desktop">
     {{ page.breadcrumb }}
-
-    
-
     {{ page.help }}
-  </div>
+  </div> #}
 
   <main class="main">
   {{ page.highlighted }}
     {% if page.previo_content %}
           <section class="section pt-2">
-            <div class="container is-max-desktop">
+            <div class="container">
               <div class="columns">
                 <div class="layout-content column">
                   {{ page.previo_content }}

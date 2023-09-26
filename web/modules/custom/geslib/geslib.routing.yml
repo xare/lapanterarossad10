@@ -5,3 +5,18 @@ geslib.admin:
     _title: 'Store Products'
   requirements:
     _permission: 'administer site configuration'
+geslib.admin.log:
+  path: '/admin/config/geslib/log'
+  defaults:
+    _controller: Drupal\geslib\Controller\GeslibLogController::overview
+    _title: 'Geslib Log'
+  requirements:
+    _permission: 'administer site configuration'
+geslib.admin.lines:
+  path: '/admin/config/geslib/lines'
+  defaults:
+    _controller: Drupal\geslib\Controller\GeslibLinesController::overview
+    _title: 'Geslib Lines'
+  requirements:
+    _permission: 'administer site configuration'
+

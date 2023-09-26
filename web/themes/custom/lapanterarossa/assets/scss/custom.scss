@@ -38,12 +38,12 @@ $radius:12px;
 
 //Mixins
 @mixin radius-top{
-    -webkit-border-top-left-radius: 12px;
--webkit-border-top-right-radius: 12px;
--moz-border-radius-topleft: 12px;
--moz-border-radius-topright: 12px;
-border-top-left-radius: 12px;
-border-top-right-radius: 12px;
+  -webkit-border-top-left-radius: 12px;
+  -webkit-border-top-right-radius: 12px;
+  -moz-border-radius-topleft: 12px;
+  -moz-border-radius-topright: 12px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 @mixin radius-bottom{
@@ -96,10 +96,17 @@ border-top-right-radius: 12px;
 @import "modules/tables";
 
 
-h2, h3, p {
+h2, h3, h4, p {
     margin-bottom: 1rem;
 }
 
+ /* section.section {
+  padding: 0.5rem 0 !important; 
+}*/
+
+section.contact {
+  padding: 0!important;
+}
 /* BANNER ENTRE TODAS */
 
 .banner p.description {

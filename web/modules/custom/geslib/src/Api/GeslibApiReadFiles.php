@@ -65,7 +65,6 @@ class GeslibApiReadFiles {
 	public function readFolder():mixed {
 		echo $this->mainFolderPath;
 		$files = glob($this->mainFolderPath . 'INTER*');
-		var_dump(count($files));
 		if ( count($files) == 0 ) {
 			return false;
 		} else {
@@ -79,6 +78,7 @@ class GeslibApiReadFiles {
 					}
 				}
 			}
+			return true;
 		}
 		$this->processZipFiles();
 	}
@@ -88,7 +88,7 @@ class GeslibApiReadFiles {
      * Process ZIP files in the HISTO folder: uncompress, read, compress, and insert data into the database.
      * @return void
      */
-    public function processZipFiles() {
+    public function processZipFiles():bool {
         // Check if the "HISTO" folder exists
         if (is_dir($this->histoFolderPath)) {
             // Get all ZIP files in the "HISTO" folder
@@ -97,7 +97,10 @@ class GeslibApiReadFiles {
             foreach ($zipFiles as $zipFile) {
                 $this->processZipFile($zipFile);
             }
-        }
+			return true;
+        } else {
+			return false;
+		}
     }
 
 	/**
@@ -142,6 +145,7 @@ class GeslibApiReadFiles {
 				}
 			}
 			rmdir($tempDir);
+			
 		}
 
 		// Insert data into the database table for the compressed file
@@ -152,6 +156,7 @@ class GeslibApiReadFiles {
 			// Insert data into the database table
 			$this->drupal->insertLogData($uncompressedFileName, 'logged', $linesCount);
 		}
+		return true;
 	}
 
 

@@ -38,7 +38,10 @@
     <div class="container">
         {{ title_prefix }}
         {% if label %}
-            <h2{{ title_attributes }}>{{ label }}</h2>
+          <div class="d-flex-title">
+            <h1{{ title_attributes }}>{{ label }}</h1>
+            <a href="noticias-rossa" class="button">Ver noticias</a>
+          </div>
         {% endif %}
         {{ title_suffix }}
         {% block content %}

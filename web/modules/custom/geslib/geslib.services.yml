@@ -1,6 +1,9 @@
 services:
   geslib.api.readFiles:
-    class: Drupal\geslib\Api\GeslibReadFiles
+    class: Drupal\geslib\Api\GeslibApiReadFiles
+    arguments: ['@logger.factory']
+  geslib.api.lines:
+    class: Drupal\geslib\Api\GeslibApiLines
     arguments: ['@logger.factory']
   geslib.api.drupal:
     class: Drupal\geslib\Api\GeslibApiDrupalManager
