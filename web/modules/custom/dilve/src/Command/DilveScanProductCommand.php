@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Drupal\dilve\Command;
 
@@ -12,7 +12,7 @@ use Drush\Commands\DrushCommands;
  * Defines a Drush command to scan one product on the base of its ean number from the database and downloads the picture.
  *
  * @DrushCommands()
- * 
+ *
  */
 
  class DilveScanProductCommand extends DrushCommands {
@@ -22,19 +22,19 @@ use Drush\Commands\DrushCommands;
      *
      * @var mixed
      */
-    private $drupal;    
+    private $drupal;
     /**
      * logger_factory
      *
      * @var mixed
      */
-    private $logger_factory;    
+    private $logger_factory;
     /**
      * dilveApi
      *
      * @var mixed
      */
-    private $dilveApi;    
+    private $dilveApi;
     /**
      * __construct
      *
@@ -58,18 +58,19 @@ use Drush\Commands\DrushCommands;
      */
     public function scanProduct( $ean ) {
         //Here I need a product give the value of $ean which corresponds to a field called field_ean associated to a Commerce product
-        $this->output()->writeln('EAN: ' . $ean);
-        $book = $this->dilveApi->search($ean);
-        var_dump($book);
-        if($book && isset($book['cover_url'])) {
+        $this->dilveApi->messageThis( 'EAN: ' . $ean);
+        $book = $this->dilveApi->search( $ean );
+
+        if( $book && isset( $book['cover_url'] ) ) {
             $file = $this->dilveApi->create_cover( $book['cover_url'], $ean.'.jpg');
-            if ( $file  ) {
-                $this->dilveApi->set_featured_image_for_product( $file, $ean );
-                $this->output()->writeln( 'Success to create cover image for EAN: ' . $ean );
-            } else {
-                \Drupal::messenger()->addError( 'Failed to create cover image for EAN: ' . $ean );
-                $this->output()->writeln( 'Failed to create cover image for EAN: ' . $ean );
+            if ( !$file  ) {
+                $message = 'Failed to create cover image for EAN: ' . $ean ;
+                $this->dilveApi->messageThis( $message, 'error' );
+                $this->dilveApi->fileThis( $message, 'error' );
+                return;
             }
+            $this->dilveApi->set_featured_image_for_product( $file, $ean );
+            $this->dilveApi->messageThis( 'Success to create cover image for EAN: ' . $ean);
         }
     }
  }

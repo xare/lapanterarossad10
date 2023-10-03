@@ -13,3 +13,8 @@ services:
     arguments : ['@logger.factory','ean']
     tags:
       - { name: drush.command }
+  dilve.hasCover:
+    class: Drupal\dilve\Command\DilveHasCoverCommand
+    arguments : ['@logger.factory','ean']
+    tags:
+      - { name: drush.command }

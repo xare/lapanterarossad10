@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Drupal\dilve\Api;
 
@@ -17,38 +17,38 @@ use SimpleXMLElement;
  * DilveApi
  */
 class DilveApi {
-	
+
 	/**
 	 * url_host
 	 *
 	 * @var mixed
 	 */
-	private $url_host;  	
+	private $url_host;
   	/**
   	 * url_path
   	 *
   	 * @var mixed
   	 */
-  	private $url_path;  	
+  	private $url_path;
   	/**
   	 * url_user
   	 *
   	 * @var mixed
   	 */
-  	private $url_user;  	
+  	private $url_user;
   	/**
   	 * url_pass
   	 *
   	 * @var mixed
   	 */
-  	private $url_pass;	
+  	private $url_pass;
 	/**
 	 * config
 	 *
 	 * @var mixed
 	 */
 	private $config;
-	
+
 	/**
 	 * __construct
 	 *
@@ -71,7 +71,7 @@ class DilveApi {
 	*   ISBN code to search
 	* @return hash
 	*   hash data of book
-	*/ 
+	*/
 	public function search($isbn) {
 		$url = "http://{$this->url_host}{$this->url_path}/getRecordsX.do";
 		$query = [
@@ -92,21 +92,20 @@ class DilveApi {
 			}
 		} catch (RequestException $e) {
 			\Drupal::logger('dilve')->error($e);
-			\Drupal::logger('dilve')->error($e);
 		}
-		
-		
+
+
 		if($xml->ONIXMessage->Product != NULL ) {
 			$xml_book = $xml->ONIXMessage->Product[0];
 			$book = [];
 			if ($xml_book) {
-			
-				//drupal_set_message(dprint_r($xml_book, 1));			
+
+				//drupal_set_message(dprint_r($xml_book, 1));
 				$book['isbn'] = $isbn;//(string)$xml_book->RecordReference;
 				$book['ean'] = (string)$xml_book->RecordReference;
 				$book['date'] = (int)$xml_book->PublicationDate;
 				$book['year'] = substr($book['date'],0, 4);
-				
+
 				#Get Price
 				foreach($xml_book->SupplyDetail->Price as $price) {
 					$book['price'] = (float)$price->PriceAmount;
@@ -121,14 +120,14 @@ class DilveApi {
 						}
 					}
 				}
-			
+
 				//Get Publisher
 				foreach ($xml_book->Publisher as $publisher) {
 					if ($publisher->NameCodeType == 02) {
 					$book['publisher'] = (string)$xml_book->Publisher->PublisherName;
 					}
 				}
-				
+
 				# Get author
 				foreach($xml_book->Contributor as $contributor) {
 					if ($contributor->ContributorRole == "A01") {
@@ -232,7 +231,7 @@ class DilveApi {
 						#print "\n-----------------------> Tipo de medio no definido (".$media->MediaFileTypeCode.") para el libro con ISBN ".$isbn."\n\n";
 					}
 				}
-			} 
+			}
 		} else {
 			$book = (string)$xml->error->text;
 		}
@@ -249,7 +248,7 @@ class DilveApi {
 	* @return string
 	*   Full URL of requested resource
 	*/
-  	private function get_file_url($filename, $isbn) {
+  	private function get_file_url(string $filename, string $isbn) {
     	# If URL is a DILVE reference, complete full request
     	if (strpos($filename, 'http://') === 0 || strpos($filename, 'https://') === 0) {
       		$url = $filename;
@@ -272,9 +271,11 @@ class DilveApi {
 	 * @return type
 	 */
 	function create_cover($url, $filename, $mimetype = 'image/jpeg', $force = FALSE) {
+		$drupalApiManager = new DilveApiDrupalManager();
 		$httpClient = \Drupal::httpClient();
 		$fileSystem = \Drupal::service('file_system');
 		$messenger = \Drupal::messenger();
+		$logPath = \Drupal::root(). '/logs/dilvePortadasErrorLogs.log';
 		try {
 			$response = $httpClient->get($url);
 			if( $response->getStatusCode() == 200 ) {
@@ -283,32 +284,24 @@ class DilveApi {
 				// Check if a file with the destination path already exists.
 				if ( file_exists($destination) ) {
 					// File already exists, load the existing file and return it.
-					$existing_files = \Drupal::entityTypeManager()
-										->getStorage('file')
-										->loadByProperties(['uri' => $destination]);
+					$existing_files = $drupalApiManager->getExistingFiles($destination);
 					$file = reset($existing_files);
+					$this->logThis('The file '.$filename . ' already exists.');
 					return $file;
 				}
 				$uri = $fileSystem->saveData($data, $destination, FileSystemInterface::EXISTS_REPLACE);
 				if ($uri) {
-					$file = File::create([
-					  'uri' => $uri,
-					  'uid' => \Drupal::currentUser()->id(),
-					  'filename' => $filename,
-					]);
-					$file->save();
-					// Add file usage so the file won't be deleted on the next cron run.
-					$file->setPermanent();
-					$file->save();
-					return $file;
+					return $drupalApiManager->createFile($uri,$filename);
 				}
 			} else {
-				$message = "File for filename: " . $filename. " with location at url: ".$url." FAILED. Status Code: ". $response->getStatusCode ." ".$response->getReasonPhrase();
-				$root_path = \Drupal::root();
-				$logPath = $root_path . '/../logs/dilvePortadasErrorLogs.log';
-				
-				$messenger->addError($message);
-				file_put_contents($logPath, $message);
+				$message = "File for filename: "
+							. $filename. " with location at url: "
+							. $url." FAILED. Status Code: "
+							. $response->getStatusCode ." "
+							. $response->getReasonPhrase();
+
+				$this->messageThis( $message, 'error');
+				$this->fileThis($message, 'error');
 				\Drupal::logger('dilve')->error($message);
 				return NULL;
 			}
@@ -323,12 +316,9 @@ class DilveApi {
 		}
 	}
 
-  	function set_featured_image_for_product(File $file, $ean) {
-		$query = \Drupal::entityQuery('commerce_product')
-			->condition('field_ean.value', $ean)
-			->accessCheck(FALSE);
-
-		$product_ids = $query->execute();
+  	function set_featured_image_for_product(File $file, string $ean) {
+		$drupalApiManager = new DilveApiDrupalManager();
+		$product_ids = $drupalApiManager->getProductIds($ean);
 
 		foreach ($product_ids as $product_id) {
 			$product = \Drupal\commerce_product\Entity\Product::load($product_id);
@@ -336,10 +326,10 @@ class DilveApi {
 				$product->set('field_portada', ['target_id' => $file->id()]);
 				$product->save();
 				\Drupal::messenger('The product with ID @productId, EAN @ean and title @productTitle was correctly saved.',
-					[ 	
+					[
 						'@productId' => $product->id,
 				  		'@productTitle' => $product->title,
-				  		'@ean' => $ean 
+				  		'@ean' => $ean
 					]
 				);
 				\Drupal::logger('dilve')
@@ -348,6 +338,8 @@ class DilveApi {
 									  '@productTitle' => $product->title,
 									  '@ean' => $ean ]
 								);
+				//In summary, this line of code is registering the usage of a file by a specific entity (in this case, a node of type 'dilve') within the Drupal system. This information can be useful, for example, to track which nodes are using a particular file or to perform cleanup operations when a file is no longer in use.
+
 				\Drupal::service('file.usage')->add($file, 'dilve', 'node', $product_id);
 			} catch(\Exception $exception){
 				\Drupal::logger('dilve')
@@ -356,5 +348,24 @@ class DilveApi {
 								);
 			}
 		}
+	}
+
+	public function messageThis( $message, $type = "status"){
+        \Drupal::messenger()->addMessage( $message, $type );
+    }
+
+    public function fileThis( $message, $type = "Notice" ){
+		$logPath = \Drupal::root() . '/logs/dilvePortadasErrorLogs.log';
+		file_put_contents($logPath, '['.$type .'] '. $message. PHP_EOL, FILE_APPEND);
+    }
+
+	public function logThis( $message, $type = "notice" ){
+
+	}
+
+	public function reportThis ( $message, $type = "notice" ) {
+		$this->messageThis($message, $type);
+		$this->fileThis($message, $type);
+		$this->logThis($message, $type);
 	}
 }
