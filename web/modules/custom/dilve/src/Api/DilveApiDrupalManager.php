@@ -15,12 +15,13 @@ class DilveApiDrupalManager {
      * @param  mixed $limit
      * @return void
      */
-    public function fetchAllProducts ($start, $limit=0) {
+    public function fetchAllProducts () {
+        $dilveApi = new DilveApi();
         $product_ids = \Drupal::entityQuery('commerce_product')
                     ->accessCheck(FALSE)
                     ->execute();
-                    //->range($start, $limit);
-
+        count($product_ids);
+        $dilveApi->reportThis('Total number of products'.count($product_ids));
         return \Drupal::entityTypeManager()
                         ->getStorage('commerce_product')
                         ->loadMultiple($product_ids);

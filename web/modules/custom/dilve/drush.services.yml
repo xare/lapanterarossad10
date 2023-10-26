@@ -18,3 +18,13 @@ services:
     arguments : ['@logger.factory','ean']
     tags:
       - { name: drush.command }
+  dilve.removeOneByOne:
+    class: Drupal\dilve\Command\DilveRemoveOneByOneCommand
+    arguments : ['@logger.factory']
+    tags:
+      - { name: drush.command }
+  dilve.removeFailing:
+    class: Drupal\dilve\Command\DilveRemoveFailingPortadasCommand
+    arguments : ['@stream_wrapper_manager', '@logger.factory']
+    tags:
+      - { name: drush.command }

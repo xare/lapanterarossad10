@@ -270,12 +270,11 @@ class DilveApi {
 	 * @param type $isbn
 	 * @return type
 	 */
-	function create_cover($url, $filename, $mimetype = 'image/jpeg', $force = FALSE) {
+	function create_cover(string $url, string $filename, string $mimetype = 'image/jpeg', bool $force = FALSE) :mixed {
 		$drupalApiManager = new DilveApiDrupalManager();
 		$httpClient = \Drupal::httpClient();
 		$fileSystem = \Drupal::service('file_system');
-		$messenger = \Drupal::messenger();
-		$logPath = \Drupal::root(). '/logs/dilvePortadasErrorLogs.log';
+
 		try {
 			$response = $httpClient->get($url);
 			if( $response->getStatusCode() == 200 ) {
@@ -286,12 +285,14 @@ class DilveApi {
 					// File already exists, load the existing file and return it.
 					$existing_files = $drupalApiManager->getExistingFiles($destination);
 					$file = reset($existing_files);
-					$this->logThis('The file '.$filename . ' already exists.');
+					$this->reportThis('The file '.$filename . ' already exists.','error');
 					return $file;
 				}
-				$uri = $fileSystem->saveData($data, $destination, FileSystemInterface::EXISTS_REPLACE);
-				if ($uri) {
-					return $drupalApiManager->createFile($uri,$filename);
+				if ( !$this->checkDimensions( $data ) ) {
+					$uri = $fileSystem->saveData($data, $destination, FileSystemInterface::EXISTS_REPLACE);
+					if ($uri) {
+						return $drupalApiManager->createFile($uri,$filename);
+					}
 				}
 			} else {
 				$message = "File for filename: "
@@ -300,18 +301,17 @@ class DilveApi {
 							. $response->getStatusCode ." "
 							. $response->getReasonPhrase();
 
-				$this->messageThis( $message, 'error');
-				$this->fileThis($message, 'error');
-				\Drupal::logger('dilve')->error($message);
+				$this->reportThis( $message, 'error');
 				return NULL;
 			}
 		} catch (RequestException $e) {
-			\Drupal::logger('dilve')->error($e->getMessage());
+			$this->reportThis($e->getMessage(), 'error');
+			return NULL;
 		} catch (ConnectException $e) {
-			\Drupal::logger('dilve')->error('ConnectException: ' . $e->getMessage());
+			$this->reportThis('ConnectException: ' .$e->getMessage(), 'error' );
 			return NULL;
 		} catch (RequestException $e) {
-			\Drupal::logger('dilve')->error('RequestException: ' . $e->getMessage());
+			$this->reportThis('RequestException: ' . $e->getMessage(), 'error' );
 			return NULL;
 		}
 	}
@@ -325,47 +325,88 @@ class DilveApi {
 			try {
 				$product->set('field_portada', ['target_id' => $file->id()]);
 				$product->save();
-				\Drupal::messenger('The product with ID @productId, EAN @ean and title @productTitle was correctly saved.',
+				$this->reportThis('The product with ID @productId, EAN @ean and title @productTitle was correctly saved.','info',
 					[
 						'@productId' => $product->id,
-				  		'@productTitle' => $product->title,
+				  		'@productTitle' => $product->title->value,
 				  		'@ean' => $ean
 					]
 				);
-				\Drupal::logger('dilve')
-						->info('The product with ID @productId, EAN @ean and title @productTitle was correctly saved.',
-									[ '@productId' => $product->id,
-									  '@productTitle' => $product->title,
-									  '@ean' => $ean ]
-								);
 				//In summary, this line of code is registering the usage of a file by a specific entity (in this case, a node of type 'dilve') within the Drupal system. This information can be useful, for example, to track which nodes are using a particular file or to perform cleanup operations when a file is no longer in use.
 
 				\Drupal::service('file.usage')->add($file, 'dilve', 'node', $product_id);
 			} catch(\Exception $exception){
-				\Drupal::logger('dilve')
-						->error('The product was not correctly saved: @exception',
-									[ '@exception' => $exception->getMessage() ]
-								);
+				$this->reportThis('The product was not correctly saved: @exception','error', [ '@exception' => $exception->getMessage() ]);
 			}
 		}
 	}
 
-	public function messageThis( $message, $type = "status"){
+	public function messageThis(
+		string $message,
+		string $type = "status",
+		array $placeholders = []) {
+		$type = ($type == "notice") ?: "status";
+		$allowed_types = ['status', 'warning', 'error'];
+		if( !in_array( $type, $allowed_types ) ) {
+			\Drupal::messenger()->addMessage( 'Invalid message type provided: ' . $type, 'error' );
+			return;
+		}
+		if (!empty($placeholders)) {
+			$message = strtr($message, $placeholders);
+		  }
         \Drupal::messenger()->addMessage( $message, $type );
     }
 
-    public function fileThis( $message, $type = "Notice" ){
-		$logPath = \Drupal::root() . '/logs/dilvePortadasErrorLogs.log';
-		file_put_contents($logPath, '['.$type .'] '. $message. PHP_EOL, FILE_APPEND);
+    public function fileThis(
+		string $message,
+		string $type = "Notice",
+		array $placeholders = [] ){
+		$logPath = \Drupal::root() . '/logs/' . $this->_getModuleName()
+		. 'PortadasErrorLogs.log';
+		if ( !empty($placeholders) ) {
+			$message = strtr($message, $placeholders);
+		}
+		file_put_contents( $logPath, '['.$type .'] '. $message. PHP_EOL, FILE_APPEND );
     }
 
-	public function logThis( $message, $type = "notice" ){
+	public function logThis(
+		string $message,
+		string $type = "info",
+		array $placeholders = [] ){
 
+		$allowed_types = ['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug'];
+
+		if ( !in_array( $type, $allowed_types ) ) {
+			\Drupal::logger('dilve')->error('Invalid log type provided: ' . $type);
+			return;
+		}
+		if ( !empty( $placeholders )) {
+			$message = strtr( $message, $placeholders );
+		}
+		\Drupal::logger($this->_getModuleName())->{$type}($message);
 	}
 
-	public function reportThis ( $message, $type = "notice" ) {
-		$this->messageThis($message, $type);
-		$this->fileThis($message, $type);
-		$this->logThis($message, $type);
+	public function reportThis (
+		string $message,
+		string $type = "notice",
+		array $placeholders = [] ) {
+		$this->messageThis($message, $type, $placeholders);
+		$this->logThis($message, $type, $placeholders);
+		$this->fileThis($message, $type, $placeholders);
+	}
+
+	private function _getModuleName () {
+		$reflection = new \ReflectionClass($this);
+    	$namespace = $reflection->getNamespaceName();
+    	return $moduleName = explode('\\', $namespace)[1];
+		// Assumes the module name is the second part of the namespace
+	}
+
+	public function checkDimensions($data) {
+		$dimensions = getimagesizefromstring($data);
+		if ($dimensions[0] === 1 ) {
+			// Log or handle the 1x1 image case
+			$this->reportThis( 'Image dimensions are 1x1, skipping download.', 'warning');
+		}
 	}
 }
