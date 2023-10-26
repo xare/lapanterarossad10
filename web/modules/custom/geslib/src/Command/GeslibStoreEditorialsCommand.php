@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Drupal\geslib\Command;
 
@@ -12,13 +12,13 @@ use Drupal\geslib\Api\GeslibApiStoreData;
 /**
  * GeslibStoreEditorialsCommand
  */
-class GeslibStoreEditorialsCommand extends DrushCommands {   
+class GeslibStoreEditorialsCommand extends DrushCommands {
    /**
     * logger_factory
     *
     * @var mixed
     */
-   private $logger_factory;   
+   private $logger_factory;
    /**
     * __construct
     *
@@ -33,17 +33,17 @@ class GeslibStoreEditorialsCommand extends DrushCommands {
      * @command geslib:storeEditorials
      * @alias gsse
      * @description Takes editorials data from the geslib_lines and stores to taxonomies
-     * 
+     *
      */
-     
+
      /**
       * storeEditorials
       *
       * @return void
       */
      public function storeEditorials() {
-        
-        $geslibApiStoreData = new GeslibApiStoreData($this->logger_factory);
+
+        $geslibApiStoreData = new GeslibApiStoreData();
         $commandResults = $geslibApiStoreData->storeEditorials();
         $this->output()->writeln(dt( 'Editorials have been saved.'));
      }

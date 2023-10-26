@@ -49,4 +49,3 @@ services:
       - { name: drush.command }
   geslib.drupal_manager:
     class: Drupal\geslib\Api\GeslibApiDrupalManager
-    arguments: ['@logger.factory']

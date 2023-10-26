@@ -7,6 +7,7 @@ use Consolidation\AnnotatedCommand\CommandResult;
 use Drush\Commands\DrushCommands;
 use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Batch\BatchStorageInterface;
+use Drupal\geslib\Api\GeslibApiDrupalManager;
 
 /**
  * Defines a Drush command to delete all products from a drupal commerce.
@@ -20,15 +21,15 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
      * @command geslib:deleteAllProducts
      * @alias gsdap
      * @description Defines a Drush command to delete all products from a drupal commerce.
-     * 
+     *
      */
 
      public function deleteAllProducts() {
         // Bootstrap Drupal.
-        
+
         $product_storage = \Drupal::entityTypeManager()
                         ->getStorage( 'commerce_product' );
-        
+
         $batchBuilder = new BatchBuilder();
         $batchBuilder->setTitle( 'Deleting Commerce products' );
         $batchBuilder->setFinishCallback([ $this, 'deleteAllProductsFinish' ]);
@@ -44,17 +45,17 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
         foreach ($productsChunks as $productsChunk) {
             $batchBuilder->addOperation([$this, 'deleteProducts'], [$productsChunk]);
         }
-      
+
         $batch = $batchBuilder->toArray();
         batch_set($batch);
         drush_backend_batch_process();
-        
+
      }
 
     /**
     * Batch finish callback for deleting all Commerce products.
     */
-        
+
     /**
      * deleteAllProductsFinish
      *
@@ -74,7 +75,7 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
 
     /**
     * Batch operation for deleting a Commerce product.
-    */    
+    */
     /**
      * deleteProducts
      *
@@ -83,7 +84,9 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
      * @return void
      */
     public function deleteProducts($product_ids, &$context) {
-        $product_storage = \Drupal::entityTypeManager()
+        $geslibApiDbManager = new GeslibApiDrupalManager;
+        $geslibApiDbManager->deleteAllProducts();
+        /* $product_storage = \Drupal::entityTypeManager()
                             ->getStorage('commerce_product');
         $variation_storage = \Drupal::entityTypeManager()
                             ->getStorage('commerce_product_variation');
@@ -94,14 +97,14 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
                 $variation_id = $product->getDefaultVariation()->id();
                 $variation = $variation_storage->load($variation_id);
                 $product->delete();
-                $context['message'] = dt('Deleting product @title ', 
+                $context['message'] = dt('Deleting product @title ',
                                         [
                                             '@title' => $product->get('title')->value,
                                             //'@ean' => $variation->get('field_ean')->value,
                                         ]);
             }
         }
-        $context['message'] = dt('Deleting products...');
+        $context['message'] = dt('Deleting products...'); */
         //$this->output()->writeln(dt('Deleting product @product_id', ['@product_id' => $product_id]));
         //$context['message'] = dt('Deleting product @product_id', ['@product_id' => $product_id]);
     }

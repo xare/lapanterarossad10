@@ -9,6 +9,10 @@ use Drupal\geslib\Api\GeslibApiLines;
 use Drupal\geslib\Api\GeslibApiReadFiles;
 use Drupal\geslib\Api\GeslibApiStoreData;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Implements the StoreProducts form.
@@ -53,126 +57,168 @@ class StoreProductsForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['#attached']['library'][] = 'geslib/geslib-library';
     $form['actions'] = [
       '#type' => 'actions',
-    ];
-    // GeslibLog button
-    $form['actions']['store_log'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('1. Log geslib file'),
-      '#button_type' => 'primary',
-      '#submit' => ['::submit2Log'],  
+      '#weight' => -10,
     ];
 
-    // GeslibLines button
-    $form['actions']['store_lines'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('2. Send to Geslib Lines'),
-      '#button_type' => 'primary',
-      '#submit' => ['::submit2Lines'],  
-    ];
-    // GeslibLines button
-    $form['actions']['store_editorials'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('3. Store Editorials'),
-      '#button_type' => 'primary',
-      '#submit' => ['::submitStoreEditorials'],  
-    ];
+    $buttons = [
+      'hello_world' => $this->generateButton(
+        '0. Hello World', 'Print Hello World', '::helloWorldAjaxCallback'),
+      'check_files' => $this->generateButton(
+        '0. Check Files', 'Print Check Files', '::checkFilesAjaxCallback'),
+      'store_log' => $this->generateButton(
+        '1. Log geslib file', 'Logs the geslib file', '::storeLogAjaxCallback'),
+      'store_lines' => $this->generateButton(
+        '2. Send to Geslib Lines', 'Sends data to geslib lines', '::storeLinesAjaxCallback'),
+      'store_editorials' => $this->generateButton(
+        '3. Store Editorials', 'Stores editorial information', '::storeEditorialsAjaxCallback'),
+      'store_authors' => $this->generateButton(
+        '4. Store Authors', 'Stores author information', '::storeAuthorsAjaxCallback'),
+      'store_product_categories' => $this->generateButton(
+        '5. Store Product Categories', 'Stores product categories', '::storeProductCategoriesAjaxCallback'),
+      'store_products' => $this->generateButton(
+        '6. Run Store Products', 'Runs the product storing process', '::storeProductsAjaxCallback'),
+      'truncate_lines' => $this->generateButton(
+        'X0. Truncate Geslib Lines', 'Runs the product storing process', '::truncateGeslibLinesAjaxCallback'),
+      'delete_editorials' => $this->generateButton(
+        'X1. Borrar Editoriales', 'Borra todas las editoriales', '::deleteEditorialsAjaxCallback'),
+      'delete_product_categories' => $this->generateButton(
+        'X2. Borrar categorias de productos', 'Borrar todas las categorías', '::deleteProductCategoriesAjaxCallback'),
+      'delete_products' => $this->generateButton(
+        'X3. Borrar Productos', 'Deletes all products', '::deleteProductsAjaxCallback'),
+  ];
 
-    $form['actions']['store_product_categories'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('4. Store Product Categories'),
-      '#button_type' => 'primary',
-      '#submit' => ['::submitStoreProductCategories'],  
-    ];
-
-    // First button
-    $form['actions']['store_products'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('5. Run Store Products'),
-      '#button_type' => 'primary',
-      '#submit' => ['::submitStoreProducts'],  
-    ];
-    // Second button
-    $form['actions']['delete_products'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('X. Delete Products'),
-      '#button_type' => 'danger',
-      '#submit' => ['::submitDeleteProducts'],  // Custom submit handler for this button
+    foreach ($buttons as $button_id => $button_data) {
+      $form['actions'][$button_id] = [
+        '#type' => 'submit',
+        '#value' => $this->t($button_data['label']),
+        '#button_type' => (strpos($button_id,'delete_') === 0 )? 'danger' : 'primary',
+        //'#submit' => ["::submit" . ucfirst(str_replace('_', '', $button_id))],
+        '#ajax'=> $button_data['ajax'],
+        '#prefix' => '<div class="vertical-button">',
+        //'#suffix' => '<span class="button-text">' . $this->t($button_data['text']) . '</span></div>',
+        '#suffix' => '</div>',
+        '#weight' => -10,
+      ];
+    }
+    $form['output_div'] = [
+      '#type' => 'markup',
+      '#markup' => '<div class="terminal" data-container="geslib_products">
+      <div id="outputDiv"></div></div>',
+      '#weight' => 50
     ];
     return $form;
   }
 
+  public function helloWorldAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">Hello World</div>'));
+    return $response;
+  }
+  public function checkFilesAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+    $geslibApiReadFiles = new GeslibApiReadFiles();
 
-  public function submit2Log( array &$form, FormStateInterface $form_state ) {
-    try {
-      $response = $this->geslibApiReadFiles->readFolder();
-      $this->messenger()->addMessage($this->t( 'Geslib Log: The data has been loaded to geslib_log' ));
-      \Drupal::logger('geslib')->notice('Geslib Log: The data has been loaded to geslib_log');
+    $fileHtml = array_reduce($geslibApiReadFiles->listFilesInFolder(), function($carry, $file) {
+      $filename = is_object($file) ? $file->filename : $file['filename'];
+      $status = is_object($file) ? $file->status : $file['status'];
+      return $carry . '<li>' . $filename . ' (' . $status . ')</li>';
+    }, '');
 
-      // Redirect to a custom route (controller)
-      $form_state->setRedirect('geslib.admin.log');
+    $html = '<div id="outputDiv">'
+              . '<p> Check files </p>'
+              . '<ul>'
+                . $fileHtml
+              . '</ul>'
+            . '</div>';
 
-    } catch (\Exception $exception) {
-      $this->messenger()->addMessage($this->t( 'Geslib Log ERROR: No files in the folder: ' .$exception->getMessage() ));
-      \Drupal::logger('geslib')->notice('Geslib Log ERROR: No files in the folder');
-    }
+
+    // Invoke a custom JavaScript function and pass the data as an argument
+    $response->addCommand( new ReplaceCommand( '#outputDiv', $html ) );
+
+    return $response;
+  }
+  public function storeLogAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $geslibReadFiles = new GeslibApiReadFiles();
+    $geslibReadFiles->readFolder();
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">File Logged</div>'));
+    return $response;
   }
 
-  public function submit2Lines( array &$form, FormStateInterface $form_state ) {
+  public function storeLinesAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $geslibApiLines = new GeslibApiLines;
+    $message = $geslibApiLines->storeToLines();
 
-    try {
-      $this->geslibApiLines->storeToLines();
-      $this->drupalManager->setGeslibLogQueued();
-      $this->messenger()->addMessage($this->t( 'Success saving to geslib_lines' ));
-      \Drupal::logger('geslib')->notice( 'Success saving to geslib_lines ' );
-      $form_state->setRedirect('geslib.admin.lines');
-
-    } catch ( \Exception $exception ) {
-
-      $this->messenger()->addMessage( $this->t( 'Error saving to geslib_lines ' .$exception->getMessage() ) );
-      \Drupal::logger('geslib')->notice( 'Error saving to geslib_lines ' .$exception->getMessage() );
-
-    }
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">Store Lines'.$message.'</div>'));
+    return $response;
   }
 
-  public function submitStoreEditorials( array &$form, FormStateInterface $form_state ) { 
-      try {
-        $this->geslibApiStoreData->storeEditorials();
-        $this->messenger()->addMessage($this->t( ' ' ) );
-        \Drupal::logger('geslib')->notice( ' ' );
-      } catch ( \Exception $exception ) {
-        $this->messenger()->addMessage($this->t( ' ' .$exception->getMessage() ) );
-        \Drupal::logger('geslib')->notice( ' ' .$exception->getMessage() );
-      }
+  public function storeEditorialsAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $geslibApiStoreData = new GeslibApiStoreData();
+    $geslibApiStoreData->storeEditorials();
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">Store editorials</div>'));
+    return $response;
+  }
+
+  public function storeAuthorsAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $geslibApiStoreData = new GeslibApiStoreData();
+    $geslibApiStoreData->storeAuthors();
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">Store authors</div>'));
+    return $response;
+  }
+
+  public function storeProductCategoriesAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $geslibApiStoreData = new GeslibApiStoreData();
+    $geslibApiStoreData->storeProductCategories();
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">Store product categories</div>'));
+    return $response;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitStoreProducts( array &$form, FormStateInterface $form_state ) {
-    // Debug: Starting the process
-    $this->messenger()->addMessage( $this->t( 'Starting the storeProducts function.' ) );
-    \Drupal::logger('geslib')->notice('Starting the storeProducts function.');
-    $result1 = $this->drupalManager->storeProducts();
-    // Debug: After storeProducts
-    $this->messenger()->addMessage($this->t('storeProducts function complete. Result: @result', [ '@result' => print_r( $result1, TRUE)]));
-    \Drupal::logger('geslib')->notice('storeProducts function complete.');
-    
-    $this->drupalManager->setGeslibLogQueued();
-    $this->messenger()->addMessage($this->t( 'setGeslibLogQueued function complete.' ));
-    \Drupal::logger('geslib')->notice( 'setGeslibLogQueued function complete.' );
-    $this->drupalManager->emptyGeslibLines();
-    $this->messenger()->addMessage($this->t( 'emptyGeslibLines function complete.' ));
-    \Drupal::logger('geslib')->notice('emptyGeslibLines function complete.');
-    
-    $this->messenger()->addMessage($this->t('Products stored successfully.'));
+
+  public function storeProductsAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $geslibApiDrupalManager = new GeslibApiDrupalManager;
+    $lines = $geslibApiDrupalManager->storeProducts();
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">
+    The Store Products process has been queued with '.$lines.' lines.</div>'));
+    return $response;
   }
 
-  public function submitDeleteProducts(array &$form, FormStateInterface $form_state) {
-    // Logic for deleting products
-    $this->drupalManager->deleteProducts();
-    $this->messenger()->addMessage($this->t('Products deleted successfully.'));
+  public function truncateGeslibLinesAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $this->drupalManager->truncateGeslibLines();
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">Geslib Lines table emptied.</div>'));
+    return $response;
+  }
+
+  public function deleteProductsAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $numberOfProducts = $this->drupalManager->deleteAllProducts();
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">'.$numberOfProducts.' products queued for deletion</div>'));
+    return $response;
+  }
+
+  public function deleteEditorialsAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">delete editorials</div>'));
+    return $response;
+  }
+
+  public function deleteProductCategoriesAjaxCallback(array &$form, FormStateInterface $form_state) {
+    $response = new AjaxResponse();
+
+    $response->addCommand(new ReplaceCommand('#outputDiv', '<div id="outputDiv">delete categories</div>'));
+    return $response;
   }
 
   /**
@@ -180,5 +226,26 @@ class StoreProductsForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // This is intentionally empty because we have custom submit handlers for our buttons.
+  }
+
+  function generateButton($label, $text, $callback) {
+    $defaultAjax = [
+        'callback' => $callback,
+        'wrapper' => 'outputDiv',
+        'method' => 'replace',
+        'effect' => 'fade',
+        'disable-refocus' => TRUE,
+        'event' => 'click',
+        'progress' => [
+            'type' => 'throbber',
+            'message' => $this->t('Verifying entry...'),
+        ],
+    ];
+
+    return [
+        'label' => $label,
+        'text' => $text,
+        'ajax' => $defaultAjax,
+    ];
   }
 }

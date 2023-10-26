@@ -2,6 +2,7 @@
 
 namespace Drupal\geslib\Api;
 
+use Drupal\Core\Logger\LoggerChannelFactory;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
 use ZipArchive;
@@ -11,60 +12,60 @@ use ZipArchive;
 /**
  * GeslibApiReadFiles
  */
-class GeslibApiReadFiles {	
+class GeslibApiReadFiles {
 	/**
 	 * mainFolderPath
 	 *
 	 * @var mixed
 	 */
-	private $mainFolderPath;    
+	private $mainFolderPath;
     /**
      * histoFolderPath
      *
      * @var mixed
      */
-    private $histoFolderPath;	
+    private $histoFolderPath;
 	/**
 	 * geslibSettings
 	 *
 	 * @var mixed
 	 */
-	private $geslibSettings;    
+	private $geslibSettings;
     /**
      * drupal
      *
      * @var mixed
      */
-    private $drupal;	
+    private $drupal;
 	/**
 	 * logger_factory
 	 *
 	 * @var mixed
 	 */
-	private $logger_factory;    
+	private $logger_factory;
     /**
      * __construct
      *
      * @param  mixed $logger_factory
      * @return void
      */
-    public function __construct( LoggerChannelFactoryInterface $logger_factory ) {
+    public function __construct( ) {
 		$this->geslibSettings = \Drupal::config('geslib.settings')->get('geslib_settings');
 		$public_files_path = \Drupal::service('file_system')->realpath("public://");
         $this->mainFolderPath = $public_files_path . '/' . $this->geslibSettings['geslib_folder_name'].'/';
         $this->histoFolderPath = $this->mainFolderPath . 'HISTO/';
-		$this->logger_factory = $logger_factory;
-        $this->drupal = new GeslibApiDrupalManager($this->logger_factory);
     }
-	
+
 	/**
 	 * readFolder
 	 *
 	 * @return mixed
 	 */
 	public function readFolder():mixed {
-		echo $this->mainFolderPath;
+		//echo $this->mainFolderPath;
 		$files = glob($this->mainFolderPath . 'INTER*');
+
+		$geslibApiDbManager = new GeslibApiDrupalManager();
 		if ( count($files) == 0 ) {
 			return false;
 		} else {
@@ -73,14 +74,63 @@ class GeslibApiReadFiles {
 					$filename = basename($file);
 					$linesCount = count(file($file));
 					// Check if the filename already exists in the database
-					if (!$this->drupal->isFilenameExists($filename)) { 
-						$this->drupal->insertLogData($filename, 'logged', $linesCount);
+					if ( !$geslibApiDbManager->isFilenameExists( $filename ) ) {
+						$item = [
+							'filename' => $filename,
+							'status' => 'logged',
+							'linesCount' => $linesCount,
+						];
+						\Drupal::queue('geslib_store_geslib_log')->createItem($item);
 					}
 				}
 			}
 			return true;
 		}
 		$this->processZipFiles();
+	}
+
+
+	public function listFilesInFolder() {
+		$dir = $this->mainFolderPath; // Replace with the actual path to the geslib folder
+
+    	$result = [];
+		// Fetch filenames and statuses from the geslib_log table
+    	$geslibApiDrupalManager = new GeslibApiDrupalManager;
+		$logFiles = $geslibApiDrupalManager->fetchLoggedFilesFromDb();
+    	$logFileNames = array_column((array) $logFiles, 'filename');
+
+		if (is_dir($dir)) {
+			if ( $dh = opendir( $dir ) ) {
+				while ( ( $file = readdir( $dh ) ) !== false) {
+					// Skip '.' and '..'
+					if ( $file === "." || $file === ".." ) {
+						continue;
+					}
+
+					// Here, you should check the presence of this file in the geslib_log database table
+					// For demonstration, I'm using a mock database array $geslib_log
+					$geslibApiDbManager = new GeslibApiDrupalManager();
+					$geslib_log = $geslibApiDbManager->fetchLoggedFilesFromDb();
+					$filenames = array_column($geslib_log, 'filename');
+					$status = in_array( $file, $filenames ) ? 'logged' : 'waiting';
+
+					$filePath = $dir . '/' . $file; // Construct the full file path
+					$fileTime = filemtime($filePath); // Get the file modification time
+
+					$result[] = [
+						'filename' => $file,
+						'status' => $status,
+						'fileTime' => $fileTime // Add the file time to each element
+					];
+				}
+				closedir($dh);
+			}
+		}
+		// Sort the array by the fileTime key
+		usort($result, function($a, $b) {
+			return $a['fileTime'] <=> $b['fileTime']; // Sort in descending order
+		});
+		return $result;
 	}
 
 	/**
@@ -145,7 +195,7 @@ class GeslibApiReadFiles {
 				}
 			}
 			rmdir($tempDir);
-			
+
 		}
 
 		// Insert data into the database table for the compressed file
@@ -163,7 +213,7 @@ class GeslibApiReadFiles {
 	/* private function insertLogData($filename, $line_count) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'geslib_log';
-	
+
 		$result = $wpdb->insert(
 			$table_name,
 			array(
@@ -178,12 +228,12 @@ class GeslibApiReadFiles {
 				'%d', // for processed_lines
 			)
 		);
-	
+
 		if (false === $result) {
 			error_log('Insert failed: ' . $wpdb->last_error);
 		}
 	} */
-		
+
 	/**
 	 * countLines
 	 *
@@ -194,7 +244,7 @@ class GeslibApiReadFiles {
 		// Check if the file exists
 		if( file_exists( $filename ) )
 			return count( file( $filename ) );
-		else 
+		else
 			return false; // Return false if file not found
 	}
 }

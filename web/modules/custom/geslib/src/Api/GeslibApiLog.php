@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace Drupal\geslib\Api;
 
@@ -10,20 +10,21 @@ use Drupal\geslib\Api\GeslibApiDrupalManager;
  * GeslibApiLog
  */
 class GeslibApiLog {
-    
+
     /**
      * drupal
      *
      * @var mixed
      */
-    private $drupal;    
+    private $drupal;
+
     /**
      * logger_factory
      *
      * @var mixed
      */
     private $logger_factory;
-    
+
     /**
      * __construct
      *
@@ -38,14 +39,14 @@ class GeslibApiLog {
     /* public function store2Log($filename){
         $this->db->insertLogData($filename);
     } */
-    
+
     /**
      * getQueuedFile
      *
      * @return void
      */
     public function getQueuedFile(){
-        return $this->drupal->getLogQueuedFile();
+        return $this->drupal->getLogLoggedFile();
     }
 
 }

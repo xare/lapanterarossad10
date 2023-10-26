@@ -4,10 +4,8 @@ services:
     arguments: ['@logger.factory']
   geslib.api.lines:
     class: Drupal\geslib\Api\GeslibApiLines
-    arguments: ['@logger.factory']
   geslib.api.drupal:
     class: Drupal\geslib\Api\GeslibApiDrupalManager
-    arguments: ['@logger.factory']
   geslib.api.storeData:
     class: Drupal\geslib\Api\GeslibApiStoreData
     arguments: ['@logger.factory']

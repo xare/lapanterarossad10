@@ -1,0 +1,6 @@
+geslib-library:
+  version: 1.x
+  css:
+    theme:
+      css/geslib.css: {}
+  # geslib.libraries.yml

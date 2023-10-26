@@ -1,0 +1,27 @@
+.form-actions {
+    flex-direction: row !important;
+    gap: 1rem;
+}
+
+.vertical-button {
+    display: block;
+}
+
+.button-text {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+.button {
+    font-size: 0.8rem !important;
+}
+
+.terminal {
+    background: #232323;
+    max-height:500px;
+    min-height:200px;
+    padding: 2rem;
+    color:aqua;
+    overflow-y: auto;
+}

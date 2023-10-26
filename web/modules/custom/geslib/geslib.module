@@ -1,0 +1,34 @@
+<?php
+
+use Drupal\geslib\Api\GeslibApiDrupalManager;
+
+/**
+ * Implements hook_cron().
+ */
+/* function geslib_cron() {
+    $queueNames = [ 'geslib_delete_product', 'geslib_store_geslib_log', 'geslib_store_geslib_lines', 'geslib_manage_product' ];
+    $geslibApiDrupalManager = new GeslibApiDrupalManager;
+    $log_id = $geslibApiDrupalManager->getGeslibLogLoggedId();
+
+    foreach ($queueNames as $queueName) {
+        $queue = \Drupal::queue($queueName);
+        if ($queueName == "geslib_store_geslib_lines") {
+            $geslibApiDrupalManager->setGeslibLog($log_id, 'queued');
+        }
+        while ($item = $queue->claimItem()) {
+            // The Queue Worker's processItem method will be called here.
+            \Drupal::service('plugin.manager.queue_worker')
+                    ->createInstance($queueName)
+                    ->processItem($item->data);
+
+            // Remove the item from the queue.
+            $queue->deleteItem($item);
+        }
+        if ($queueName == "geslib_delete_product" || $queueName == "geslib_manage_product"){
+            $geslibApiDrupalManager->setGeslibLog($log_id, 'processed');
+            $geslibApiDrupalManager->truncateGeslibLines();
+        }
+    }
+
+
+} */
