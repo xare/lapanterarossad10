@@ -3,7 +3,7 @@
  * Defines Javascript behaviors for the cookies module.
  */;
 
-(function (Drupal, $) {
+(function (Drupal) {
   'use strict';
 
   /**
@@ -12,17 +12,27 @@
   Drupal.behaviors.cookiesGtag = {
 
     consentGiven: function () {
-      var $script = $('script#cookies_gtag');
-      $script.each(function() {
-        var newScript = document.createElement('script');
-        newScript.innerHTML = this.innerHTML;
-        $.each(this.attributes, function( index, attr ) {
-          if (attr.name !== 'type' && attr.name !== 'id') {
-            newScript.setAttribute(attr.name, attr.value);
+      var scriptIds = [
+        'cookies_gtag_gtag',
+        'cookies_gtag_gtag_ajax',
+        'cookies_gtag_gtm'
+      ];
+      for (var scriptId in scriptIds) {
+        var script = document.getElementById(scriptIds[scriptId]);
+        if (script) {
+          var content = script.innerHTML;
+          var newScript = document.createElement('script');
+          var attributes = Array.from(script.attributes);
+          for (var attr in attributes) {
+            var name = attributes[attr].nodeName;
+            if (name !== 'type' && name !== 'id') {
+              newScript.setAttribute(name, attributes[attr].nodeValue);
+            }
           }
-        });
-        this.parentNode.replaceChild(newScript, this);
-      });
+          newScript.innerHTML = content;
+          script.parentNode.replaceChild(newScript, script);
+        }
+      }
     },
 
     attach: function (context) {
@@ -35,4 +45,4 @@
       });
     }
   };
-})(Drupal, jQuery);
+})(Drupal);

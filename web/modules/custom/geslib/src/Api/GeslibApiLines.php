@@ -214,6 +214,10 @@ class GeslibApiLines {
 		// 2. Read the file and store in lines table
 		$lines = file($this->mainFolderPath.$filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		foreach ( $lines as $line ) {
+			$line = $this->sanitizeLine( $line );
+			if( $this->isUnnecessaryLine( $line ) ) continue;
+			if( !$this->isInProductKey( $line ) ) continue;
+			if( $this->isInEditorials( $line )) continue;
 			$item = [
 				'line' => $line,
 				'log_id' => $log_id,
@@ -223,6 +227,22 @@ class GeslibApiLines {
 		return 'File '.$this->mainFolderPath.$filename.' has been read with '.$lines.'lines';
 	}
 
+	public function sanitizeLine($line) {
+		// Split the line into its components
+		$line_items = explode('|', $line);
+
+		// Sanitize each component
+		$sanitized_items = array_map(function($line_item) {
+			if(is_string($line_item))
+				return $this->geslibApiSanitize->utf8_encode($line_item);
+			return $line_item;
+		}, $line_items);
+
+		// Join the components back together
+		$sanitized_line = implode('|', $sanitized_items);
+
+		return $sanitized_line;
+	}
 
 
 	/**
@@ -247,11 +267,11 @@ class GeslibApiLines {
 	/**
 	 * processGP4
 	 *
-	 * @param  array $data
+	 * @param  mixed $data
 	 * @param  int $log_id
 	 * @return void
 	 */
-	private function processGP4( array $data, int $log_id ) {
+	private function processGP4( mixed $data, int $log_id ) {
 		//"type" | "action" | "geslib_id" |	"description" |	"author" | "pvp_ptas" |	"isbn" | "ean" |"num_paginas" |	"num_edicion" |	"origen_edicion" |"fecha_edicion" |	"fecha_reedicion" |	"año_primera_edicion" |"año_ultima_edicion" |"ubicacion" |"stock" |	"materia" |	"fecha_alta" |	"fecha_novedad" |"Idioma" |	"formato_encuadernacion" |"traductor" |"ilustrador" |"colección" |"numero_coleccion" |"subtitulo" |	"estado" |	"tmr" |	"pvp" |	"tipo_de_articulo" |"clasificacion" |"editorial" |	"pvp_sin_iva" |	"num_ilustraciones" |"peso" |"ancho" |"alto" |		"fecha_aparicion" |	"descripcion_externa" |	"palabras_asociadas" |			"ubicacion_alternativa" |"valor_iva" |"valoracion" |"calidad_literaria" |	"precio_referencia" | "cdu" |"en_blanco" |"libre_1" |"libre_2" | 			"premiado" |"pod" | "distribuidor_pod" | "codigo_old" | "talla" |			"color" |"idioma_original" |"titulo_original" |	"pack" |"importe_canon" |	"unidades_compra" |"descuento_maximo"
 		// GP4|A|17|BODAS DE SANGRE|GARRIGA MART�NEZ, JOAN|3660|978-84-946952-8-5|9788494695285|56|01||20180101||    |    ||1|06|20230214||003|02|BROGGI RULL, ORIOL||1||APUNTS I CAN�ONS DE JOAN GARRIGA SOBRE TEXTOS DE FEDERICO GARC�A LORCA (A PARTIR|0|0,00|22,00|L0|1|15|21,15|||210|148|||||4,00|||0,00|||||N|N||12530|||001||N||1|100,00|
 		if ($data[1] === 'B') {
@@ -263,7 +283,7 @@ class GeslibApiLines {
 
 		$content_array = array_combine($keys, $data);
 		$content_array = $this->geslibApiSanitize->sanitize_content_array($content_array);
-		$this->drupal->insertData($content_array, $data[1], $log_id, 'producto');
+		$this->drupal->insertData($content_array, $data[1], $log_id, 'product');
 
 	}
 
@@ -328,9 +348,9 @@ class GeslibApiLines {
 		//Add categories
 		//3|A|01|Cartes|||
 		if ($data[1] === 'B') {
-			$keys = self::$editorialDeleteKeys;
+			$keys = self::$categoriaDeleteKeys;
 		} elseif (in_array($data[1], ['A', 'M'])) {
-			$keys = self::$editorialKeys;
+			$keys = self::$categoriaKeys;
 		}
 		if ( !isset($keys)) return false;
 		$content_array = array_combine( $keys, $data );
@@ -408,14 +428,12 @@ class GeslibApiLines {
 	private function mergeContent( int $geslib_id, array $new_content_array, string $type ) :mixed {
 		//1. Get the content given the $geslib_id
 		$original_content = $this->drupal->fetchContent( $geslib_id, $type );
-		if ( !$original_content ) {
-			return "error at Merge Content";
-		}
+		if ( !$original_content ) return "error at Merge Content";
 		$original_content_array = json_decode( $original_content, true);
 		// Merge 'categories' if set
 		if (
-			isset($original_content_array['categories']) &&
-			isset($new_content_array['categories'])
+			isset($original_content_array['categories'])
+			&& isset($new_content_array['categories'])
 			) {
 				$original_content_array['categories'] = array_merge( $original_content_array['categories'], $new_content_array['categories'] );
 		} elseif (isset($new_content_array['categories'])) {
@@ -433,6 +451,47 @@ class GeslibApiLines {
 		$content = json_encode($original_content_array);
 		// update
 		return $this->drupal->updateGeslibLines($geslib_id, $type, $content);
+	}
+	/**
+	 * unnecessaryLine
+	 *
+	 * @param  mixed $line
+	 * @return boolean
+	 */
+	public function isUnnecessaryLine(string $line) :bool {
+		return strpos($line, '< Genérica >') !== false;
+	}
+
+	public function isInEditorials( string $line ) :bool {
+		// $line = 1L|A|216|AGUILAR
+		$line_items = explode( '|', $line );
+		if( $line_items[0] == '1L' && $line_items[1] == 'A' ) {
+			$terms = get_terms([
+				'taxonomy'   => 'editorials', // replace with your actual taxonomy name
+				'hide_empty' => false,
+				'meta_query' => [
+					[
+						'key'     => 'geslib_id',
+						'value'   => $line_items[2],
+						'compare' => '=',
+					],
+				],
+			]);
+
+			// If term with geslib_id found, return true
+			if (!empty($terms) && !is_wp_error($terms)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	public function isInProductKey($line) {
+		$line_items = explode('|', $line);
+		if (is_array($line_items) && in_array($line_items[0], self::$lineTypes)){
+			return implode('|', $line_items);
+		} else {
+			return false;
+		}
 	}
 
 }

@@ -46,3 +46,4 @@
 /web/web.config
 /web/themes/custom/*/node_modules
 /db
+/web/logs

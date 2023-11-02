@@ -4,4 +4,3 @@ gtag:
     js/cookies_gtag.js: {}
   dependencies:
     - core/drupal
-    - core/jquery

@@ -6,10 +6,9 @@
  */
 
 use Drupal\cookies\Constants\CookiesConstants;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Template\Attribute;
 use Drupal\cookies\CookiesKnockOutService;
-use Drupal\google_tag\Entity\Container;
+use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Implements hook_help().
@@ -28,71 +27,33 @@ function cookies_gtag_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
- * Alter the snippets to be inserted on a page response.
- *
- * This hook allows other modules to alter the snippets to be inserted based on
- * custom settings not defined by this module.
- *
- * @param array $snippets
- *   Associative array of snippets keyed by type: script, noscript and
- *   data_layer.
- * @param \Drupal\google_tag\Entity\Container $container
- *   The associated container object.
- */
-function cookies_gtag_google_tag_snippets_alter(array &$snippets, Container $container) {
-  if (!empty($snippets['noscript'])) {
-    // See
-    // https://www.drupal.org/project/cookies/issues/3306566#comment-14795975
-    // for details.
-    // We entirely remove the noscript container, as with disabled JS
-    // the user can't give or deny consent.
-    // If this is too strict, we could add this as setting later.
-    $cookies_gtag_service_entity = \Drupal::entityTypeManager()
-      ->getStorage('cookies_service')
-      ->load('gtag');
-    $consent_required = $cookies_gtag_service_entity->get('consentRequired');
-    if ($consent_required) {
-      // Only remove the noscirpt container if consent is required, as otherwise
-      // the noscript user consents automatically, and the iframe does not need
-      // to get removed here:
-      unset($snippets['noscript']);
-    }
-  }
-}
-
-/**
  * Implements hook_page_attachments().
  */
 function cookies_gtag_page_attachments(&$page) {
   $doKo = CookiesKnockOutService::getInstance()->doKnockOut();
-  if ($doKo && isset($page["#attached"]["html_head"])) {
-    $gtag_exists = FALSE;
-    foreach ($page["#attached"]["html_head"] as &$head_tag) {
-      if (preg_match('/^google_tag_script_tag/', $head_tag[1])) {
-        if (isset($head_tag[0]['#attributes'])) {
-          if ($head_tag[0]['#attributes'] instanceof Attribute) {
-            $head_tag[0]['#attributes']->setAttibute('id', ['cookies_gtag']);
-            $head_tag[0]['#attributes']->setAttibute('type', [CookiesConstants::COOKIES_SCRIPT_KO_TYPE]);
-            $head_tag[0]['#attributes']->setAttibute('data-cookieconsent', ['gtag']);
-          }
-          elseif (is_array($head_tag[0]['#attributes'])) {
-            $head_tag[0]['#attributes']['id'] = 'cookies_gtag';
-            $head_tag[0]['#attributes']['type'] = CookiesConstants::COOKIES_SCRIPT_KO_TYPE;
-            $head_tag[0]['#attributes']['data-cookieconsent'] = 'gtag';
-          }
-        }
-        else {
-          $head_tag[0]['#attributes'] = [
-            'id' => 'cookies_gtag',
-            'type' => CookiesConstants::COOKIES_SCRIPT_KO_TYPE,
-            'data-cookieconsent' => 'gtag',
-          ];
-        }
-        $gtag_exists = TRUE;
+  if ($doKo) {
+    $page["#attached"]["library"][] = 'cookies_gtag/gtag';
+  }
+}
+
+/**
+ * Implements hook_js_alter().
+ */
+function cookies_gtag_js_alter(&$javascript, AttachedAssetsInterface $assets) {
+  $doKo = CookiesKnockOutService::getInstance()->doKnockOut();
+  if ($doKo) {
+    $module_path = \Drupal::service('extension.list.module')->getPath('google_tag');
+    $scripts = [
+      'gtag' => $module_path . '/js/gtag.js',
+      'gtag_ajax' => $module_path . '/js/gtag.ajax.js',
+      'gtm' => $module_path . '/js/gtm.js',
+    ];
+    foreach ($scripts as $key => $script) {
+      if (isset($javascript[$script])) {
+        $javascript[$script]['attributes']['type'] = CookiesConstants::COOKIES_SCRIPT_KO_TYPE;
+        $javascript[$script]['attributes']['id'] = 'cookies_gtag_' . $key;
+        $javascript[$script]['attributes']['data-cookieconsent'] = 'gtag';
       }
-    }
-    if ($gtag_exists) {
-      $page["#attached"]["library"][] = 'cookies_gtag/gtag';
     }
   }
 }

@@ -2,9 +2,8 @@
 
 namespace Drupal\Tests\cookies_gtag\FunctionalJavascript;
 
-use Drupal\cookies\Constants\CookiesConstants;
+use Drupal\Core\Url;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
-use Drupal\google_tag\Entity\Container;
 use Drupal\Tests\cookies\Traits\CookiesCacheClearTrait;
 
 /**
@@ -62,20 +61,78 @@ class CookiesGtagFunctionalJavascriptTest extends WebDriverTestBase {
     parent::setUp();
 
     $this->config('system.site')->set('page.front', '/test-page')->save();
+    $page = $this->getSession()->getPage();
     $this->user = $this->drupalCreateUser([]);
     $this->adminUser = $this->drupalCreateUser([]);
     $this->adminUser->addRole($this->createAdminRole('admin', 'admin'));
     $this->adminUser->save();
-    $this->drupalLogin($this->adminUser);
+    // Manually login the admin user:
+    $this->drupalGet(Url::fromRoute('user.login'));
+    $page->fillField('edit-name', $this->adminUser->getAccountName());
+    $page->fillField('edit-pass', $this->adminUser->passRaw);
+    $page->pressButton('edit-submit');
+
+    // Adjust default container google tag id:
+    $this->drupalGet('/admin/config/services/google-tag');
+    $page->fillField('edit-accounts-0-value', 'G-xxxxxxxx');
+    $page->pressButton('edit-submit');
     $this->drupalPlaceBlock('cookies_ui_block');
-    // Create Google Tag Container:
-    $this->container = new Container([], 'google_tag_container');
-    $this->container->enforceIsNew();
-    $this->container->set('id', 'test_container');
-    $this->container->set('container_id', 'GTM-xxxxxx');
-    $this->container->set('path_list', '');
-    $this->container->save();
     $this->clearBackendCaches();
+  }
+
+  /**
+   * Tests if the scripts get knocked out through 'consentRequired'.
+   *
+   * Tests if the scripts get knocked out through the 'consentRequired'
+   * cookies service entity setting.
+   */
+  public function testScriptKnockedOutThroughConsentRequired() {
+    $session = $this->assertSession();
+    // Service consent is required, both javascript files should be disabled
+    // and the googletagmanager js shouldn't be displayed at all:
+    $this->drupalGet('<front>');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.js"]', 1);
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.js"]', 'type', 'text/plain');
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.js"]', 'data-cookieconsent', 'gtag');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.ajax.js"]', 1);
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.ajax.js"]', 'type', 'text/plain');
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.ajax.js"]', 'data-cookieconsent', 'gtag');
+
+    $this->assertNull($session->waitForElementVisible('css', 'script[src="https://www.googletagmanager.com/gtag/js?id=G-xxxxxxxx"]', 5000));
+    $session->elementNotExists('css', 'script[src="https://www.googletagmanager.com/gtag/js?id=G-xxxxxxxx"]');
+
+    // Uncheck gtag service entity "consent required":
+    $cookies_gtag_service_entity = \Drupal::entityTypeManager()
+      ->getStorage('cookies_service')
+      ->load('gtag');
+    $cookies_gtag_service_entity->set('consentRequired', FALSE);
+    $cookies_gtag_service_entity->save();
+
+    \Drupal::service('cache_tags.invalidator')->invalidateTags([
+      'config:cookies.cookies_service',
+    ]);
+
+    $this->clearBackendCaches();
+
+    // Service consent is not required anymore, both js should be enabled now
+    // and the googletagmanager.js should appear:
+    $this->drupalGet('<front>');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.js"]', 1);
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.js"]', 'type', '');
+    $session->elementAttributeExists('css', 'script[src*="/js/gtag.js"]', 'data-cookieconsent', 'gtag');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.ajax.js"]', 1);
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.ajax.js"]', 'type', '');
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.ajax.js"]', 'data-cookieconsent', 'gtag');
+
+    // @todo For some reason inside the tests, the script isn't present.
+    // Although, if we check the HMTL output, it is present.
+    // Check that
+    // script[src="https://www.googletagmanager.com/gtm.js?id=GTM-xxxxxx"]
+    // is present here.
   }
 
   /**
@@ -83,16 +140,20 @@ class CookiesGtagFunctionalJavascriptTest extends WebDriverTestBase {
    */
   public function testGtagJsCorrectlyKnocked() {
     $session = $this->assertSession();
-
+    // Service consent is required, both javascript files should be disabled
+    // and the googletagmanager js shouldn't be displayed at all:
     $this->drupalGet('<front>');
-    // Consent not given, expects:
-    // @codingStandardsIgnoreStart
-    // <script src="/sites/default/files/google_tag/test/google_tag.script.js?XXXXXXXXXX" defer="" id="cookies_gtag" type="CookiesConstants::COOKIES_SCRIPT_KO_TYPE"></script>
-    // @codingStandardsIgnoreEnd
-    // Ensure the blocked script ID exists and is blocked:
-    $session->elementAttributeContains('css', 'script#cookies_gtag', 'type', CookiesConstants::COOKIES_SCRIPT_KO_TYPE);
-    // Ensure the original doesn't exist anymore:
-    $session->elementNotExists('css', 'script[src="https://www.googletagmanager.com/gtm.js?id=GTM-xxxxxx"]');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.js"]', 1);
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.js"]', 'type', 'text/plain');
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.js"]', 'data-cookieconsent', 'gtag');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.ajax.js"]', 1);
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.ajax.js"]', 'type', 'text/plain');
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.ajax.js"]', 'data-cookieconsent', 'gtag');
+
+    $this->assertNull($session->waitForElementVisible('css', 'script[src="https://www.googletagmanager.com/gtag/js?id=G-xxxxxxxx"]', 5000));
+    $session->elementNotExists('css', 'script[src="https://www.googletagmanager.com/gtag/js?id=G-xxxxxxxx"]');
 
     // Fire consent script, accept all cookies:
     $script = "var options = { all: true };
@@ -101,15 +162,20 @@ class CookiesGtagFunctionalJavascriptTest extends WebDriverTestBase {
 
     $this->clearBackendCaches();
 
+    // Service consent is not required anymore, both js should be enabled now
+    // and the googletagmanager.js should appear:
     $this->drupalGet('<front>');
-    // Consent given, expects:
-    // @codingStandardsIgnoreStart
-    // <script src="https://www.googletagmanager.com/gtm.js?id=GTM-xxxxxx" async=""></script>
-    // <script src="/sites/default/files/google_tag/test/google_tag.script.js?XXXXXXXXXX" defer=""></script>
-    // @codingStandardsIgnoreEnd
-    $session->elementExists('css', 'script[src="https://www.googletagmanager.com/gtm.js?id=GTM-xxxxxx"]');
-    $session->elementExists('css', 'script[src*="google_tag.script.js"]');
-    $session->elementAttributeNotExists('css', 'script[src*="google_tag.script.js"]', 'type');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.js"]', 1);
+    $session->elementAttributeNotExists('css', 'script[src*="/js/gtag.js"]', 'type');
+    $session->elementAttributeExists('css', 'script[src*="/js/gtag.js"]', 'data-cookieconsent', 'gtag');
+
+    $session->elementsCount('css', 'script[src*="/js/gtag.ajax.js"]', 1);
+    $session->elementAttributeNotExists('css', 'script[src*="/js/gtag.ajax.js"]', 'type');
+    $session->elementAttributeContains('css', 'script[src*="/js/gtag.ajax.js"]', 'data-cookieconsent', 'gtag');
+
+    $session->waitForElementVisible('css', 'script[src="https://www.googletagmanager.com/gtag/js?id=G-xxxxxxxx"]', 5000);
+    $session->elementExists('css', 'script[src="https://www.googletagmanager.com/gtag/js?id=G-xxxxxxxx"]');
   }
 
 }

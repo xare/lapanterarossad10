@@ -1,7 +1,7 @@
 name: 'COOKiES Google Tag Manager'
 type: module
 description: 'Submodule of COOKiES to manage Google Tag Manager (by "google_tag" module) inside of COOKiES consent management.'
-core_version_requirement: ^8.9 || ^9 || ^10
+core_version_requirement: ^9.5 || ^10
 package: 'COOKiES'
 dependencies:
   - cookies:cookies
@@ -10,7 +10,7 @@ dependencies:
 libraries:
   - cookies_gtag/gtag
 
-# Information added by Drupal.org packaging script on 2023-05-31
-version: '1.2.3'
+# Information added by Drupal.org packaging script on 2023-09-27
+version: '1.2.4'
 project: 'cookies'
-datestamp: 1685533293
+datestamp: 1695790800

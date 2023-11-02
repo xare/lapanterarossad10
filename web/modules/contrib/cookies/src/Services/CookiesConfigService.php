@@ -151,7 +151,7 @@ class CookiesConfigService {
    *   configurations and all cookies service and group entities as an array.
    */
   public function getCookiesModuleData($lang_id = NULL) {
-    $cookiesTexts = $this->configFactory->get('cookies.texts')->getRawData();
+    $cookiesTexts = $this->configFactory->get('cookies.texts')->get();
     $cookiesServicesArray = [];
     $cookiesGroupsArray = [];
     $cookieServiceObjects = $this->entityTypeManager->getStorage('cookies_service')->loadMultiple();

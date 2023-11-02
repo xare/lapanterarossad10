@@ -10,7 +10,7 @@ dependencies:
 libraries:
   - cookies_matomo/analytics
 
-# Information added by Drupal.org packaging script on 2023-05-31
-version: '1.2.3'
+# Information added by Drupal.org packaging script on 2023-09-27
+version: '1.2.4'
 project: 'cookies'
-datestamp: 1685533293
+datestamp: 1695790800

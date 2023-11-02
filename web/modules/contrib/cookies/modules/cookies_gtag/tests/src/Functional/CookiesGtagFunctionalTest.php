@@ -2,9 +2,8 @@
 
 namespace Drupal\Tests\cookies_gtag\Functional;
 
-use Drupal\Core\Cache\Cache;
+use Drupal\google_tag\Entity\TagContainer;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\google_tag\Entity\Container;
 
 /**
  * This class provides methods specifically for testing something.
@@ -83,43 +82,6 @@ class CookiesGtagFunctionalTest extends BrowserTestBase {
     $page->pressButton('edit-submit');
     $session->statusCodeEquals(200);
     $session->pageTextContains('The selected modules have been uninstalled.');
-  }
-
-  /**
-   * Test to see if the noscript section is deleted when consent is required.
-   */
-  public function testNoscriptDeletedWithoutJavascript() {
-    $session = $this->assertSession();
-    // Place block:
-    $this->drupalPlaceBlock('cookies_ui_block');
-    // Create Google Tag Container:
-    $container = new Container([], 'google_tag_container');
-    $container->enforceIsNew();
-    $container->set('id', 'test_container');
-    $container->set('container_id', 'GTM-xxxxxx');
-    $container->set('path_list', '');
-    $container->save();
-
-    // Service consent is required, the noscript section should be deleted:
-    $this->drupalGet('<front>');
-    $session->statusCodeEquals(200);
-    $session->elementNotExists('css', 'body > noscript');
-
-    // Uncheck gtag service entity "consent required":
-    $cookies_gtag_service_entity = \Drupal::entityTypeManager()
-      ->getStorage('cookies_service')
-      ->load('gtag');
-    $cookies_gtag_service_entity->set('consentRequired', FALSE);
-    $cookies_gtag_service_entity->save();
-
-    \Drupal::service('cache_tags.invalidator')->invalidateTags([
-      'config:cookies.cookies_service',
-    ]);
-
-    // Service consent is not required anymore, the iframe should appear:
-    $this->drupalGet('<front>');
-    $session->statusCodeEquals(200);
-    $session->elementExists('css', 'body > noscript > iframe[src *= "id=GTM-xxxxxx"]');
   }
 
 }

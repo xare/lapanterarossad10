@@ -1,0 +1,56 @@
+{#
+/**
+ * @file
+ * Theme override to display a taxonomy term.
+ *
+ * Available variables:
+ * - url: URL of the current term.
+ * - name: (optional) Name of the current term.
+ * - content: Items for the content of the term (fields and description).
+ *   Use 'content' to print them all, or print a subset such as
+ *   'content.description'. Use the following code to exclude the
+ *   printing of a given child element:
+ *   @code
+ *   {{ content|without('description') }}
+ *   @endcode
+ * - attributes: HTML attributes for the wrapper.
+ * - page: Flag for the full page state.
+ * - term: The taxonomy term entity, including:
+ *   - id: The ID of the taxonomy term.
+ *   - bundle: Machine name of the current vocabulary.
+ * - view_mode: View mode, e.g. 'full', 'teaser', etc.
+ *
+ * @see template_preprocess_taxonomy_term()
+ */
+#}
+{%
+  set classes = [
+    'taxonomy-term',
+    'vocabulary-' ~ term.bundle|clean_class,
+  ]
+%}
+<div{{ attributes.setAttribute('id', 'taxonomy-term-' ~ term.id).addClass(classes) }}>
+  {{ title_prefix }}
+  {% if name and not page %}
+    <h2><a href="{{ url }}">{{ name }}</a></h2>
+  {% endif %}
+  {{ title_suffix }}
+  <h1>{{ term.getName()|title }}</h1>
+    <p>{{ content.description }}</p>
+    {% if related_books %}
+      <div class="columns grid-books">
+        {% for book in related_books.books %}
+          <a class="column book-item is-3-desktop is-6-tablet" href="{{ book.url }}">
+            <figure class="cover">
+              <img src="{{book.image_uri}}" alt="{{ book.title }}" />
+            </figure>
+            <p class="title">{{ book.title|capitalize }}</p>
+            <p class="price">{{ book.price|number_format(2) }} € </p>
+          </a>
+        {% endfor %}
+         {% if related_books.pager %}
+          {{ pager }}
+        {% endif %}
+      </div>
+  {% endif %}
+</div>
