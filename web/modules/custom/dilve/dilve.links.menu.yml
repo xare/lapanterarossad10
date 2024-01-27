@@ -4,3 +4,9 @@ dilve.admin:
   route_name: dilve.settings
   weight: 100
   parent: system.admin_config
+dilve.scan.products:
+  title: Scan Products
+  description: Scan Products
+  route_name: dilve.scan.products
+  weight: 100
+  parent: system.admin_config

@@ -65,14 +65,57 @@ class DilveApi {
 	}
 
 	/**
+	 * scanProducts
+	 * Scan products and process them one by one.
+	 *
+	 * @return void
+	 */
+	public function scanProducts() {
+        $dilveApiDrupalManager = new DilveApiDrupalManager();
+        $start = 0;
+        $limit = 100; //number of products to process at a time.
+        $products = $dilveApiDrupalManager->fetchAllProducts();
+        $counter = 0;
+        $this->reportThis( ' Processed ' . count($products) . ' products.' );
+        foreach( $products as $product ) {
+            $ean = $product->get('field_ean')->value;
+            if ( !$ean ) {
+                $this->reportThis($counter .' - No EAN set for product variation ID: ' . $product->id());
+                continue;
+            }
+            $book = $this->search( $ean );
+            if( is_array( $book ) ) {
+                $this->reportThis($counter .' Title - ' . $book['title'] . '('.$book['author'][0]['name'].') - '.$book['isbn']);
+            }
+            if( $book && isset( $book['cover_url'] )) {
+                $this->reportThis('Download from: '.$book['cover_url']);
+
+                $file = $this->create_cover( $book['cover_url'], $ean.'.jpg');
+
+                if ( !$file  ) {
+                    $this->reportThis( $counter .' Failed to create cover image for EAN: ' . $ean );
+                    continue;
+                }
+                \Drupal::logger('dilve_file')->info($file->id());
+                $dilveApiDrupalManager->set_featured_image_for_product( $file, $ean );
+                $this->reportThis( $counter ." Success to create cover image for EAN: " . $ean );
+            }
+            $this->reportThis( 'EAN: ' . $ean );
+            $counter++;
+        }
+        $this->reportThis( 'Finished scanning all products.' );
+    }
+
+	/**
 	* Function DilveApi::search
 	*
 	* @param string $isbn
 	*   ISBN code to search
-	* @return hash
+	* @return mixed
 	*   hash data of book
 	*/
-	public function search($isbn) {
+	public function search( $isbn ): mixed {
+
 		$url = "http://{$this->url_host}{$this->url_path}/getRecordsX.do";
 		$query = [
 			'user' => $this->url_user,
@@ -82,12 +125,13 @@ class DilveApi {
 			'version' => '2.1',
 			'encoding' => 'UTF-8',
 		];
+
 		try {
 			$http_client = \Drupal::httpClient();
 			$response = $http_client->get($url, ['query' => $query]);
-			if ($response->getStatusCode() == 200) {
+			if ( $response->getStatusCode() == 200 ) {
 				$body = (string) $response->getBody();
-				$xml = new SimpleXMLElement($body);
+				$xml = new SimpleXMLElement( $body );
 				// Your code here to handle the $xml object
 			}
 		} catch (RequestException $e) {
@@ -95,9 +139,10 @@ class DilveApi {
 		}
 
 
-		if($xml->ONIXMessage->Product != NULL ) {
+		if( $xml->ONIXMessage->Product != NULL ) {
 			$xml_book = $xml->ONIXMessage->Product[0];
 			$book = [];
+
 			if ($xml_book) {
 
 				//drupal_set_message(dprint_r($xml_book, 1));
@@ -235,6 +280,7 @@ class DilveApi {
 		} else {
 			$book = (string)$xml->error->text;
 		}
+
 		return $book;
   	}
 
@@ -266,32 +312,34 @@ class DilveApi {
 	 * Checks if the cover exists and if it does returns the file object.
 	 * It it doesn't exists downloads it and creates the object
 	 *
-	 * @param type $url
-	 * @param type $isbn
-	 * @return type
+	 * @param string $url
+	 * @param string $filename
+	 *
+	 * @return mixed
 	 */
-	function create_cover(string $url, string $filename, string $mimetype = 'image/jpeg', bool $force = FALSE) :mixed {
+	function create_cover(string $url, string $filename): mixed {
 		$drupalApiManager = new DilveApiDrupalManager();
 		$httpClient = \Drupal::httpClient();
-		$fileSystem = \Drupal::service('file_system');
+		$fileSystem = \Drupal::service( 'file_system' );
 
 		try {
-			$response = $httpClient->get($url);
+			$response = $httpClient->get( $url );
 			if( $response->getStatusCode() == 200 ) {
 				$data = $response->getBody();
 				$destination = 'public://cover_images/' . $filename;
 				// Check if a file with the destination path already exists.
-				if ( file_exists($destination) ) {
+				if ( file_exists( $destination ) ) {
 					// File already exists, load the existing file and return it.
-					$existing_files = $drupalApiManager->getExistingFiles($destination);
-					$file = reset($existing_files);
+					$existing_files = $drupalApiManager->getExistingFiles( $destination );
+					\Drupal::logger('dilve')->info('There are '.count( $existing_files ).' in the cover images folder.');
+					$file = reset( $existing_files );
 					$this->reportThis('The file '.$filename . ' already exists.','error');
 					return $file;
 				}
 				if ( !$this->checkDimensions( $data ) ) {
 					$uri = $fileSystem->saveData($data, $destination, FileSystemInterface::EXISTS_REPLACE);
-					if ($uri) {
-						return $drupalApiManager->createFile($uri,$filename);
+					if ( $uri ) {
+						return $drupalApiManager->createFile( $uri, $filename );
 					}
 				}
 			} else {
@@ -302,58 +350,39 @@ class DilveApi {
 							. $response->getReasonPhrase();
 
 				$this->reportThis( $message, 'error');
-				return NULL;
+				return false;
 			}
 		} catch (RequestException $e) {
-			$this->reportThis($e->getMessage(), 'error');
-			return NULL;
+			$this->reportThis( $e->getMessage(), 'error' );
+			return false;
 		} catch (ConnectException $e) {
-			$this->reportThis('ConnectException: ' .$e->getMessage(), 'error' );
-			return NULL;
+			$this->reportThis( 'ConnectException: ' .$e->getMessage(), 'error' );
+			return false;
 		} catch (RequestException $e) {
-			$this->reportThis('RequestException: ' . $e->getMessage(), 'error' );
-			return NULL;
+			$this->reportThis( 'RequestException: ' . $e->getMessage(), 'error' );
+			return false;
 		}
 	}
 
-  	function set_featured_image_for_product(File $file, string $ean) {
-		$drupalApiManager = new DilveApiDrupalManager();
-		$product_ids = $drupalApiManager->getProductIds($ean);
 
-		foreach ($product_ids as $product_id) {
-			$product = \Drupal\commerce_product\Entity\Product::load($product_id);
-			try {
-				$product->set('field_portada', ['target_id' => $file->id()]);
-				$product->save();
-				$this->reportThis('The product with ID @productId, EAN @ean and title @productTitle was correctly saved.','info',
-					[
-						'@productId' => $product->id,
-				  		'@productTitle' => $product->title->value,
-				  		'@ean' => $ean
-					]
-				);
-				//In summary, this line of code is registering the usage of a file by a specific entity (in this case, a node of type 'dilve') within the Drupal system. This information can be useful, for example, to track which nodes are using a particular file or to perform cleanup operations when a file is no longer in use.
-
-				\Drupal::service('file.usage')->add($file, 'dilve', 'node', $product_id);
-			} catch(\Exception $exception){
-				$this->reportThis('The product was not correctly saved: @exception','error', [ '@exception' => $exception->getMessage() ]);
-			}
-		}
-	}
 
 	public function messageThis(
 		string $message,
 		string $type = "status",
 		array $placeholders = []) {
-		$type = ($type == "notice") ?: "status";
-		$allowed_types = ['status', 'warning', 'error'];
+		if($type == "notice"){
+			$type = "status";
+		}
+		$allowed_types = ['status', 'warning', 'error', 'info'];
 		if( !in_array( $type, $allowed_types ) ) {
-			\Drupal::messenger()->addMessage( 'Invalid message type provided: ' . $type, 'error' );
+			\Drupal::messenger()->addMessage( 'Invalid message type provided: '. var_export( $type,TRUE ), 'error' );
+			\Drupal::logger('dilve')->error( 'Invalid message type provided: ' . var_export( $type,TRUE ). 'error' );
 			return;
 		}
 		if (!empty($placeholders)) {
 			$message = strtr($message, $placeholders);
-		  }
+		}
+		\Drupal::logger('dilve')->info( $message . " " .$type);
         \Drupal::messenger()->addMessage( $message, $type );
     }
 
@@ -366,7 +395,7 @@ class DilveApi {
 		if ( !empty($placeholders) ) {
 			$message = strtr($message, $placeholders);
 		}
-		file_put_contents( $logPath, '['.$type .'] '. $message. PHP_EOL, FILE_APPEND );
+		//file_put_contents( $logPath, '['.$type .'] '. $message. PHP_EOL, FILE_APPEND );
     }
 
 	public function logThis(
@@ -409,4 +438,6 @@ class DilveApi {
 			$this->reportThis( 'Image dimensions are 1x1, skipping download.', 'warning');
 		}
 	}
+
+
 }

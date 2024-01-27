@@ -1,0 +1,12 @@
+<?php
+
+use Drupal\dilve\Api\DilveApiDrupalManager;
+
+/**
+ * Implements hook_cron().
+ */
+
+function dilve_cron() {
+    $dilveApiDrupalManager = new DilveApiDrupalManager;
+    $dilveApiDrupalManager->scanProducts();
+}

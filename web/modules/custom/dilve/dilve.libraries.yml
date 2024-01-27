@@ -1,0 +1,10 @@
+dilve-library:
+  version: 1.x
+  css:
+    theme:
+      css/dilve.css: {}
+  #js:
+  #  js/geslibUpdateValues.js: {}
+  dependencies:
+    - core/jquery
+  # dilve.libraries.yml

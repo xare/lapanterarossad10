@@ -1,0 +1,3 @@
+services:
+  dilve.api.drupal:
+    class: Drupal\dilve\Api\DilveApiDrupalManager

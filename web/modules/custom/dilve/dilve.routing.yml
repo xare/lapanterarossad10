@@ -5,3 +5,10 @@ dilve.settings:
     _title: 'Dilve Settings'
   requirements:
     _permission: 'administer site configuration'
+dilve.scan.products:
+  path: '/admin/config/dilve/scan-products'
+  defaults:
+    _form: '\Drupal\dilve\Form\ScanProductsForm'
+    _title: 'Scan Products'
+  requirements:
+    _permission: 'administer site configuration'

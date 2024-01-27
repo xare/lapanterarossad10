@@ -60,7 +60,7 @@ use Drush\Commands\DrushCommands;
         //Here I need a product give the value of $ean which corresponds to a field called field_ean associated to a Commerce product
         $this->dilveApi->messageThis( 'EAN: ' . $ean);
         $book = $this->dilveApi->search( $ean );
-
+        \Drupal::logger('dilve_scan_product')->info('Inside scan Product. Book: '.var_export( $book, TRUE ));
         if( $book && isset( $book['cover_url'] ) ) {
             $file = $this->dilveApi->create_cover( $book['cover_url'], $ean.'.jpg');
             if ( !$file  ) {
