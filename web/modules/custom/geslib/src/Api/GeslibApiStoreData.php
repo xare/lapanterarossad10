@@ -15,11 +15,16 @@ class GeslibApiStoreData {
      * @return void
      */
     public function storeProductCategories() {
-        $geslibApiDrupalManager = new GeslibApiDrupalManager();
-        $product_categories = $geslibApiDrupalManager->getProductCategoriesFromGeslibLines();
+        $geslibApiDrupalTaxonomyManager = new GeslibApiDrupalTaxonomyManager();
+        $geslibApiDrupalLinesManager = new GeslibApiDrupalLinesManager();
+        $product_categories =  $geslibApiDrupalLinesManager->getProductCategoriesFromGeslibLines();
         foreach($product_categories as $product_category) {
-            \Drupal::queue( 'geslib_manage_editorial' )->createItem( $product_category );
-            //$geslibApiDrupalManager->storeTerm($product_category, 'product_categories');
+            if(!$product_category || !isset($product_category['name']) || $product_category['name'] == null ) {
+                \Drupal::logger('geslib_store_categories')->warning('Category´s name was missing for '. var_export($product_category, TRUE));
+                continue;
+            }
+            \Drupal::logger('geslib_store_categories')->info('Categoría:' .$product_category['name'].', Geslib ID' .$product_category['geslib_id']);
+            $geslibApiDrupalTaxonomyManager->storeTerm($product_category, 'product_categories');
         }
     }
 
@@ -29,11 +34,17 @@ class GeslibApiStoreData {
      * @return void
      */
     public function storeEditorials() {
-        $geslibApiDrupalManager = new GeslibApiDrupalManager();
-        $editorials = $geslibApiDrupalManager->getEditorialsFromGeslibLines();
+        \Drupal::logger('geslib_store_editorial')->info('Editorial');
+        $geslibApiDrupalTaxonomyManager = new GeslibApiDrupalTaxonomyManager;
+        $geslibApiDrupalLinesManager = new GeslibApiDrupalLinesManager;
+        $editorials = $geslibApiDrupalLinesManager->getEditorialsFromGeslibLines();
         foreach($editorials as $editorial) {
-            \Drupal::queue( 'geslib_manage_editorial' )->createItem( $editorial );
-            //$geslibApiDrupalManager->storeTerm($editorial, 'editorials');
+            if( !$editorial || !isset($editorial['name']) || $editorial['name'] == null ) {
+                \Drupal::logger('geslib_store_editorials')->warning('Editorial´s name was missing for '. var_export($editorial, TRUE));
+                continue;
+            }
+            \Drupal::logger('geslib_store_editorial')->info('Editorial:' .$editorial['name'].', Geslib ID' .$editorial['geslib_id']);
+            $geslibApiDrupalTaxonomyManager->storeTerm($editorial, 'editorials');
         }
     }
 
@@ -43,11 +54,17 @@ class GeslibApiStoreData {
      * @return void
      */
     public function storeAuthors() {
-        $geslibApiDrupalManager = new GeslibApiDrupalManager();
-        $authors = $geslibApiDrupalManager->getAuthorsFromGeslibLines();
-        var_dump($authors);
+        $geslibApiDrupalTaxonomyManager = new GeslibApiDrupalTaxonomyManager;
+        $geslibApiDrupalLinesManager = new GeslibApiDrupalLinesManager;
+        $authors = $geslibApiDrupalLinesManager->getAuthorsFromGeslibLines();
+
         foreach($authors as $author) {
-            \Drupal::queue( 'geslib_manage_author' )->createItem( $author );
+            if(!$author || !isset($author['name']) || $author['name'] == null ){
+                \Drupal::logger('geslib_store_authors')->warning('Author´s name was missing for '. var_export($author, TRUE));
+             continue;
+            }
+            \Drupal::logger('geslib_store_authors')->info('Autor:' .$author['name'].', Geslib ID' .$author['geslib_id']);
+            $geslibApiDrupalTaxonomyManager->storeTerm($author, 'autores', true);
         }
     }
 

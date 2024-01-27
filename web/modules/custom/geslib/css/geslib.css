@@ -25,3 +25,33 @@
     color:aqua;
     overflow-y: auto;
 }
+
+.geslib-wrap, .geslib-wrap p {
+    font-size: 1.1rem !important;
+    line-height: 1.5rem !important;
+}
+
+ul.geslib-statistics {
+    display: flex;
+    gap: 1rem;
+    flex-direction:row;
+    flex-wrap: wrap;
+    font-size: 1.2rem;
+    line-height:1.6rem;
+    list-style-type: none;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+
+}
+
+.geslib-statistics li {
+    padding: 1rem;
+    border:1px solid #cdcdcd;
+    text-align: center;
+    background-color: #efefef;
+    transition: background-color 0.4s ease;
+}
+
+.geslib-statistics li.darker-background {
+    background-color: rgba(0, 0, 0, 0.1); /* Adjust the color and opacity to your liking */
+}

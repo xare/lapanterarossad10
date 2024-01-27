@@ -5,6 +5,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
+use Drupal\geslib\Api\GeslibApiDrupalProductsManager;
 
 /**
  * Processes Tasks for Deleting products.
@@ -34,7 +35,8 @@ class DeleteProduct extends QueueWorkerBase implements ContainerFactoryPluginInt
      * {@inheritdoc}
      */
     public function processItem( $data ) {
-        $this->geslibApiDrupalManager->deleteProductById( $data );
+        $geslibApiDrupalProductsManager = new GeslibApiDrupalProductsManager;
+        $geslibApiDrupalProductsManager->deleteProductById( $data );
     }
 
 }

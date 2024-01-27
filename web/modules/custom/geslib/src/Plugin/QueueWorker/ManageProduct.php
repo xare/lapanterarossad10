@@ -5,6 +5,7 @@ namespace Drupal\geslib\Plugin\QueueWorker;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
+use Drupal\geslib\Api\GeslibApiDrupalProductsManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -35,10 +36,11 @@ class ManageProduct extends QueueWorkerBase implements ContainerFactoryPluginInt
    * {@inheritdoc}
    */
   public function processItem($data) {
-    if ($data['action'] === 'A' || $data['action'] === 'M') {
-        $this->geslibApiDrupalManager->storeProduct($data['geslib_id'], $data['content']);
-    } elseif ($data['action'] === 'B') {
-        $this->geslibApiDrupalManager->deleteProductById($data['geslib_id']);
+    $geslibApiDrupalProductManager = new GeslibApiDrupalProductsManager;
+    if ($data['action'] == 'A' || $data['action'] == 'M') {
+        $geslibApiDrupalProductManager->storeProduct( $data['geslib_id'], $data['content']);
+    } elseif ($data['action'] == 'B') {
+        $geslibApiDrupalProductManager->deleteProduct( $data['geslib_id'] );
     }
   }
 }

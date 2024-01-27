@@ -3,7 +3,7 @@ namespace Drupal\geslib\Plugin\QueueWorker;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
-use Drupal\geslib\Api\GeslibApiDrupalManager;
+use Drupal\geslib\Api\GeslibApiDrupalLogManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -17,11 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 
  class StoreToGeslibLog extends QueueWorkerBase implements ContainerFactoryPluginInterface {
-    protected $geslibApiDrupalManager;
-
-    public function __construct(GeslibApiDrupalManager $geslibApiDrupalManager) {
-        $this->geslibApiDrupalManager = $geslibApiDrupalManager;
-    }
 
     public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
         // Here you can load any services from the container and pass them to your constructor.
@@ -34,10 +29,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
      * {@inheritdoc}
      */
     public function processItem( $data ) {
+
         $filename = $data['filename'];
         $status = $data['status'];
         $linesCount = $data['linesCount'];
-        $this->geslibApiDrupalManager->insertLogData( $filename, $status, $linesCount );
+        $geslibApiDrupalLogManager = new GeslibApiDrupalLogManager;
+        $geslibApiDrupalLogManager->insertLogData( $filename, $status, $linesCount );
 
     }
  }

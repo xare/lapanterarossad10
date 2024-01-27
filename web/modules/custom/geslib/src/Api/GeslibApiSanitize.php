@@ -15,12 +15,19 @@ class GeslibApiSanitize {
      * @return mixed $content_array
      */
     public function sanitize_content_array( $content_array ){
+        // Regular expression for URL
+        $urlRegex = '/\b(?:https?|ftp):\/\/[a-zA-Z0-9-\.]+\.[a-zA-Z]{2,}(?:\/\S*)?\b/';
         // Sanitize the array values
-        $content_array = array_map( function( $value ) {
-            // Skip URL strings
-            if ( filter_var( $value, FILTER_VALIDATE_URL )) {
-                return $value;
-            }
+        $content_array = array_map( function( $value ) use($urlRegex) {
+            // Find and replace URLs with placeholders
+            $placeholders = [];
+            $counter = 0;
+            $value = preg_replace_callback($urlRegex, function($matches) use (&$placeholders, &$counter) {
+                $placeholder = "__URL{$counter}__";
+                $placeholders[$placeholder] = $matches[0];
+                $counter++;
+                return $placeholder;
+            }, $value);
             // Convert numeric strings to numbers
             // Convert string values to compatible encoding
             if ( is_string( $value ) ) {
@@ -35,9 +42,12 @@ class GeslibApiSanitize {
                 $value = null;
             }
 
+            // Restore URLs from placeholders
+            foreach ($placeholders as $placeholder => $url) {
+                $value = str_replace($placeholder, $url, $value);
+            }
             return $value;
         }, $content_array );
-
 
         return $content_array;
     }

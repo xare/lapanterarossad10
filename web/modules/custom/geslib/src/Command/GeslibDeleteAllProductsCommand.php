@@ -8,6 +8,7 @@ use Drush\Commands\DrushCommands;
 use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Batch\BatchStorageInterface;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
+use Drupal\geslib\Api\GeslibApiDrupalProductsManager;
 
 /**
  * Defines a Drush command to delete all products from a drupal commerce.
@@ -84,28 +85,7 @@ class GeslibDeleteAllProductsCommand extends DrushCommands  {
      * @return void
      */
     public function deleteProducts($product_ids, &$context) {
-        $geslibApiDbManager = new GeslibApiDrupalManager;
-        $geslibApiDbManager->deleteAllProducts();
-        /* $product_storage = \Drupal::entityTypeManager()
-                            ->getStorage('commerce_product');
-        $variation_storage = \Drupal::entityTypeManager()
-                            ->getStorage('commerce_product_variation');
-
-        foreach($product_ids as $product_id){
-            $product = $product_storage->load($product_id);
-            if ($product instanceof \Drupal\commerce_product\Entity\ProductInterface) {
-                $variation_id = $product->getDefaultVariation()->id();
-                $variation = $variation_storage->load($variation_id);
-                $product->delete();
-                $context['message'] = dt('Deleting product @title ',
-                                        [
-                                            '@title' => $product->get('title')->value,
-                                            //'@ean' => $variation->get('field_ean')->value,
-                                        ]);
-            }
-        }
-        $context['message'] = dt('Deleting products...'); */
-        //$this->output()->writeln(dt('Deleting product @product_id', ['@product_id' => $product_id]));
-        //$context['message'] = dt('Deleting product @product_id', ['@product_id' => $product_id]);
+        $geslibApiDrupalProductsManager = new GeslibApiDrupalProductsManager;
+        $geslibApiDrupalProductsManager->deleteAllProducts();
     }
 }

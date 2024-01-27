@@ -3,4 +3,8 @@ geslib-library:
   css:
     theme:
       css/geslib.css: {}
+  js:
+    js/geslibUpdateValues.js: {}
+  dependencies:
+    - core/jquery
   # geslib.libraries.yml

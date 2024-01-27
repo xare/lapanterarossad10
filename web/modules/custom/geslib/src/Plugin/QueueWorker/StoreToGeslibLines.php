@@ -34,9 +34,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
      * {@inheritdoc}
      */
     public function processItem( $data ) {
-        $log_id = $data['log_id'];
-        $line = $data['line'];
-        $this->geslibApiLines->readLine( $line, $log_id );
-
+        $this->geslibApiLines->readLine( $data['line'], $data['log_id'], $data['id'] );
     }
  }

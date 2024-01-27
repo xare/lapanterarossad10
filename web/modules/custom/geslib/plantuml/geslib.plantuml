@@ -1,0 +1,171 @@
+@startuml
+
+class GeslibApi {
+    + void messageThis($message, $type, $placeholders)
+    + void fileThis($message, $type, $placeholders)
+    + void logThis($message, $type, $placeholders)
+    - mixed _getModuleName()
+    + void reportThis ($message, $type, $placeholders)
+    + void checkDimensions($data)
+    + string getLatestLogs()
+}
+
+class GeslibApiReadFiles {
+    - $mainFolderPath
+    - $histoFolderPath
+    - $geslibSettings
+    - $drupal
+    - $logger_factory
+    + __construct()
+    + array readFolder()
+    + void insert2geslibLog( $filename )
+    + array listFilesInFolder()
+    + bool processZipFiles()
+    - bool processZipFile( $zipFilePath )
+    + mixed countLines( $filename )
+    + mixed countLinesWhithGP4($filename, $type)
+}
+
+class GeslibApiLog {
+    - $drupal
+    - $logger_factory
+    + __construct()
+    + string getQueuedFile()
+}
+
+class GeslibApiLines {
+    # array $productDeleteKeys
+    # array $authorDeleteKeys
+    # array $editorialDeleteKeys
+    # array $categoriaDeleteKeys
+    # array $productKeys
+    # array $categoriaKeys
+    # array $authorKeys
+    # array $editorialKeys
+    # array $lineTypes
+    - $drupal
+    - $mainFolderPath
+    - $geslibSettings
+    - $geslibApiSanitize
+    - + __construct()
+    + int storeToLines()
+    + string sanitizeLine( $line )
+    + void readLine( $line, $log_id )
+    - processGP4( $data, $log_id )
+    - process6E( $data, $log_id )
+    - process6TE( $data, $log_id )
+    - process1L( $data, $log_id )
+    - process3( $data, $log_id )
+    - process5( $data, $log_id )
+    - processAUT( $data, $log_id )
+    - processAUTBIO( $data, $log_id )
+    - processB( $data, $log_id )
+    - mergeContent( $geslib_id, $new_content_array, $type )
+    + bool isUnnecessaryLine( $line )
+    + bool isInEditorials( $line )
+    + bool isInAuthors( $line )
+    + string|bool isInProductKey( $line )
+}
+
+class GeslibApiStoreData {
+    + storeProductCategories
+    + storeEditorials
+    + storeAuthors
+}
+
+class geslibApiSanitize {
+    + sanitize_content_array( $content_array )
+    + utf8_encode( $string )
+}
+
+class Encoding {
+    # $win1252ToUtf8
+    # $brokenUtf8ToUtf8
+    # $utf8ToWin1252
+    string toUTF8( $text )
+    string toWin1252( $text )
+    string toISO8859( $text )
+    string fixUTF8( $text )
+    string UTF8FixWin1252Chars( $text )
+    string removeBOM($str="")
+}
+
+class GeslibApiDrupalManager {
+    GESLIB_LINES_TABLE
+    GESLIB_LOG_TABLE
+    GESLIB_QUEUES_TABLE
+    $geslibLinesKeys
+    $geslibLogKeys
+    - $geslibApiSanitize
+    + __construct( )
+    + void insertData()
+    + string | false countRows( string $table )
+}
+
+class GeslibApiDrupalLogManager {
+    + bool insertLogData( $filename, $status, $linesCount )
+    + bool isFilenameExists( $filename )
+    + string getLogLoggedFile()
+    + int getLogLoggedId()
+    + string getLogQueuedFilename()
+    + bool isQueued()
+    + mixed getLogId( string $filename )
+    + bool setLogStatus(int $log_id, string $status)
+    + array fetchLoggedFilesFromDb()
+    + countGeslibLog()
+    + bool checkLoggedStatus()
+    + int countGeslibLogStatus( string $status )
+    + bool setLogTableToLogged()
+    + string getFilename( int $log_id )
+}
+
+class GeslibApiDrupalLinesManager {
+    + mixed getEditorialsFromGeslibLines()
+    + mixed getAuthorsFromGeslibLines()
+    + string getLinesContent( int $geslib_id, string $type )
+    + getProductCategoriesFromGeslibLines()
+    + truncateGeslibLines()
+    + countGeslibLines()
+    + string updateGeslibLines( string $geslib_id, string $type, mixed $content)
+}
+
+class GeslibApiDrupalTaxonomyManager {
+    + mixed storeTerm( $content, $vocabulary, $sanitize = true )
+    + void deleteEditorials()
+    + void deleteProductCategories()
+    - void deleteTaxonomy( $taxonomy_name )
+}
+
+class GeslibApiDrupalProductManager {
+    + void storeProducts()
+    + storeProduct( int $geslib_id, $content )
+    + int deleteAllProducts()
+    + bool deleteProducts($product_ids, &$context)
+    + void stockProduct()
+    + void deleteProduct( int $geslib_id )
+    + int getTotalNumberOfProducts()
+    + void deleteProductBy( int $product_id)
+}
+
+class GeslibApiDrupalQueueManager {
+    + bool insertLinesIntoQueue( array $batch )
+    + void insertProductsIntoQueue( array $batch)
+    + void deleteItemFromQueue( string $type, int $log_id, int $geslib_id )
+    + bool deleteItemsFromQueue( string $type )
+    + void processBatchStoreLines( int $batchSize = 10 )
+    + array getBatchFromQueue(int $batchSize, string $type)
+    + void processBatchStoreProducts( int $batchSize = 10 )
+    + array countGeslibQueue( string $type )
+    + processFromQueue( string $type )
+    + int getQueueCount( string $queue_name )
+    + mixed countProductsInGeslibLinesQueue()
+    + mixed getLastProductInGeslibLinesQueue()
+}
+
+GeslibApiDrupalLogManager <|-- GeslibApiDrupalManager
+GeslibApiDrupalLinesManager <|-- GeslibApiDrupalManager
+GeslibApiDrupalTaxonomyManager <|-- GeslibApiDrupalManager
+GeslibApiDrupalProductsManager <|-- GeslibApiDrupalManager
+GeslibApiDrupalQueueManager <|-- GeslibApiDrupalManager
+
+@enduml

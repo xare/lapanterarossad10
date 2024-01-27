@@ -3,6 +3,10 @@ services:
     class: Drupal\geslib\Command\GeslibHelloCommand
     tags:
       - { name: drush.command }
+  geslib.hello2:
+    class: Drupal\geslib\Command\GeslibHello2Command
+    tags:
+      - { name: drush.command }
   geslib.log:
     class: Drupal\geslib\Command\GeslibLogCommand
     arguments: ['@logger.factory']
@@ -49,3 +53,11 @@ services:
       - { name: drush.command }
   geslib.drupal_manager:
     class: Drupal\geslib\Api\GeslibApiDrupalManager
+  geslib.ProcessAll:
+    class: Drupal\geslib\Command\GeslibProcessAllCommand
+    tags:
+      - { name: drush.command }
+  geslib.ProcessFile:
+    class: Drupal\geslib\Command\GeslibProcessFileCommand
+    tags:
+      - { name: drush.command }

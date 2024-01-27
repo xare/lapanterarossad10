@@ -19,4 +19,25 @@ geslib.admin.lines:
     _title: 'Geslib Lines'
   requirements:
     _permission: 'administer site configuration'
+geslib.admin.files:
+  path: '/admin/config/geslib/files'
+  defaults:
+    _controller: Drupal\geslib\Controller\GeslibFilesController::overview
+    _title: 'Geslib Files'
+  requirements:
+    _permission: 'administer site configuration'
+geslib.admin.queues:
+  path: '/admin/config/geslib/queues'
+  defaults:
+    _controller: Drupal\geslib\Controller\GeslibQueueController::overview
+    _title: 'Geslib Queues'
+  requirements:
+    _permission: 'administer site configuration'
+geslib.ajax_statistics:
+  path: '/admin/config/ajax-statistics'
+  defaults:
+    _controller: 'Drupal\geslib\Controller\GeslibAjaxStatistics::ajaxStatistics'
+    _title: 'AJAX Statistics'
+  requirements:
+    _permission: 'administer site configuration'
 

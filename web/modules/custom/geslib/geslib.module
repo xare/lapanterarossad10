@@ -1,34 +1,110 @@
 <?php
 
+use Drupal\geslib\Api\GeslibApiDrupalLinesManager;
+use Drupal\geslib\Api\GeslibApiDrupalLogManager;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
+use Drupal\geslib\Api\GeslibApiDrupalProductsManager;
+use Drupal\geslib\Api\GeslibApiDrupalQueueManager;
+use Drupal\geslib\Api\GeslibApiLines;
+use Drupal\geslib\Api\GeslibApiReadFiles;
+use Drupal\geslib\Api\GeslibApiStoreData;
 
 /**
+ * geslib_cron()
  * Implements hook_cron().
+ * https://api.drupal.org/api/drupal/core%21core.api.php/function/hook_cron/9
+ * https://www.drupal.org/docs/administering-a-drupal-site/cron-automated-tasks/cron-automated-tasks-overview
+ *
+ * This function hooks into the main hook_cron method in drupal,
+ * and will be triggered every time the main cron function is called.
+ * When it gets called then all the programmed functions that are defined
+ * with the _cron suffix are executed.
+ *
+ * In this case the geslib_cron() function will proceed to make the following actions:
+ * - readFolder(): Reads the geslib folder, unzip any zip file, and store the name of the file to geslib_log table with status logged.
+ * - As long as we may find a row in geslib_log with status=´logged´ we will run the whole process.
+ * - 1. Obtain the log_id for the first row where the status is 'logged'
+ * - 2. If no rows contain ´logged´ status we stop running as there is no new elements to process
+ * - 3. Before processing andy logged status row we still check if for some reason there is any row with status queued
+ * - 4. If there is a queued row we delete all the store_lines type rows from geslib_queues
+ * - 5. Else we may set the row status to queued
+ * - 6. storeToLines. We read the file INTER*** corresponding to the geslib_log table [status=queued]
+ * and store its data in geslib_queue where the type is store_lines
+ * - 7. Once all the data has been stored to geslib_queue we can take that data, recombine and serialize in geslib_lines
+ * - 8. With the geslib_lines table full we may
+ *  - 8.1 Queue authors taxonomies by geslib_queue[type=store_author]
+ *  - 8.2 Queue editorials taxonomies by geslib_queue[type=store_editorial]
+ *  - 8.3 Queue products by geslib_queue[type=store_products]
+ * - 9. Once geslib_lines has been read completely it gets emptied.
+ * - 10.The geslib_log row gets then status=processed
+ *
+ * In the case no logged row was found but yet a queued row was still there
+ * we rerun the whole process on that.
+ *
+ * @return void
  */
-/* function geslib_cron() {
-    $queueNames = [ 'geslib_delete_product', 'geslib_store_geslib_log', 'geslib_store_geslib_lines', 'geslib_manage_product' ];
+
+function geslib_cron(): void {
+    $geslibApiReadFiles = new GeslibApiReadFiles();
+    $geslibApiLines = new GeslibApiLines();
     $geslibApiDrupalManager = new GeslibApiDrupalManager;
-    $log_id = $geslibApiDrupalManager->getGeslibLogLoggedId();
-
-    foreach ($queueNames as $queueName) {
-        $queue = \Drupal::queue($queueName);
-        if ($queueName == "geslib_store_geslib_lines") {
-            $geslibApiDrupalManager->setGeslibLog($log_id, 'queued');
+    $geslibApiDrupalLogManager = new GeslibApiDrupalLogManager;
+    $geslibApiDrupalLinesManager = new GeslibApiDrupalLinesManager;
+    $geslibApiDrupalProductsManager = new GeslibApiDrupalProductsManager;
+    $geslibApiDrupalQueueManager = new GeslibApiDrupalQueueManager;
+    $geslibApiStoreData = new GeslibApiStoreData();
+    $geslibApiReadFiles->readFolder();
+    while ($geslibApiDrupalLogManager->checkLoggedStatus()) {
+        $log_id = $geslibApiDrupalLogManager->getLogLoggedId();
+        if( $log_id <= 0 ) {
+            \Drupal::logger('geslib')->error('For some reason log id is not valid');
+            continue;
         }
-        while ($item = $queue->claimItem()) {
-            // The Queue Worker's processItem method will be called here.
-            \Drupal::service('plugin.manager.queue_worker')
-                    ->createInstance($queueName)
-                    ->processItem($item->data);
-
-            // Remove the item from the queue.
-            $queue->deleteItem($item);
+        \Drupal::logger('geslib_log')
+                ->notice('ACTUAL LOG: ' . $log_id );
+        if ( !$geslibApiDrupalLogManager->isQueued() ){
+            \Drupal::logger('geslib_log')
+                    ->info('There is no queued row, so we set log id'. $log_id. ' to queued.' );
+            $geslibApiDrupalLogManager->setLogStatus( $log_id, 'queued' );
+        } else {
+            \Drupal::logger('geslib_log')
+                    ->info('There is a queued log file: ' . $log_id );
+                    // We remove whatever unfinished store_lines queue was left so we can start again.
+            $geslibApiDrupalQueueManager->deleteItemsFromQueue( 'store_lines' );
         }
-        if ($queueName == "geslib_delete_product" || $queueName == "geslib_manage_product"){
-            $geslibApiDrupalManager->setGeslibLog($log_id, 'processed');
-            $geslibApiDrupalManager->truncateGeslibLines();
-        }
+        $geslibApiLines->storeToLines();
+        \Drupal::logger( 'geslib' )
+                ->notice( 'Finished processing into queues for lines' );
+        $geslibApiDrupalQueueManager->processFromQueue( 'store_lines' );
+        $geslibApiStoreData->storeAuthors();
+        $geslibApiStoreData->storeEditorials();
+        // Assuming you have a method to get queued tasks
+        \Drupal::logger( 'geslib' )
+        ->notice( 'Finished processing from queues for lines' );
+        $geslibApiDrupalProductsManager->storeProducts();
+        \Drupal::logger( 'geslib' )
+        ->notice( 'Finished storing product info to store_products queue.' );
+        $geslibApiDrupalQueueManager->processFromQueue( 'store_products' );
+        $geslibApiDrupalLinesManager->truncateGeslibLines();
+        $geslibApiDrupalLogManager->setLogStatus( $log_id, 'processed');
     }
-
-
-} */
+    // in the case all the logged files had been processed but maybe some queued row would be orphaned
+    if ( $geslibApiDrupalLogManager->isQueued() != FALSE ) {
+        $log_id = $geslibApiDrupalLogManager->isQueued();
+        $geslibApiLines->storeToLines();
+        \Drupal::logger( 'geslib' )
+                ->notice( 'Finished processing into queues for lines' );
+        $geslibApiDrupalQueueManager->processFromQueue( 'store_lines' );
+        $geslibApiStoreData->storeAuthors();
+        $geslibApiStoreData->storeEditorials();
+        // Assuming you have a method to get queued tasks
+        \Drupal::logger( 'geslib' )
+              ->notice( 'Finished processing from queues for lines' );
+        $geslibApiDrupalProductsManager->storeProducts();
+        \Drupal::logger( 'geslib' )
+              ->notice( 'Finished storing product info to store_products queue.' );
+        $geslibApiDrupalQueueManager->processFromQueue( 'store_products' );
+        $geslibApiDrupalLinesManager->truncateGeslibLines();
+        $geslibApiDrupalLogManager->setLogStatus( $log_id, 'processed');
+    }
+}

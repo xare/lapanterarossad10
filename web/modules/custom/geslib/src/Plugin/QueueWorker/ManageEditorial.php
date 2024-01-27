@@ -5,6 +5,7 @@ namespace Drupal\geslib\Plugin\QueueWorker;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\geslib\Api\GeslibApiDrupalManager;
+use Drupal\geslib\Api\GeslibApiDrupalTaxonomyManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -35,6 +36,7 @@ class ManageEditorial extends QueueWorkerBase implements ContainerFactoryPluginI
    * {@inheritdoc}
    */
   public function processItem($data) {
-    return $this->geslibApiDrupalManager->storeTerm($data, 'editorial');
+    $geslibApiDrupalTaxonomyManager = new GeslibApiDrupalTaxonomyManager;
+    return $geslibApiDrupalTaxonomyManager->storeTerm($data, 'editorial');
   }
 }

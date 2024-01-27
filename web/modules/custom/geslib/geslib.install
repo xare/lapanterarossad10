@@ -22,7 +22,7 @@ use Drupal\taxonomy\Entity\Vocabulary;
 
     $schema['geslib_log'] = [
         'description' => 'Stores filename, startdate, end_date, status and lines_count.',
-        'fields' =>[ 
+        'fields' =>[
             'id'=>[
                 'description'=> 'The ordinary identifier for the record.',
                 'type' => 'serial',
@@ -55,7 +55,7 @@ use Drupal\taxonomy\Entity\Vocabulary;
             'lines_count' => [
                 'description' => "The number of lines contained in the file.",
                 'type' => 'int',
-                'unsigned' => TRUE, 
+                'unsigned' => TRUE,
                 'not null' => FALSE,
             ],
         ],
@@ -89,7 +89,7 @@ use Drupal\taxonomy\Entity\Vocabulary;
             'geslib_id' => [
                 'description' => "The internal ID provided by Geslib.",
                 'type' => 'int',
-                'unsigned' => TRUE, 
+                'unsigned' => TRUE,
                 'not null' => TRUE,
             ],
             'action' => [
@@ -124,6 +124,58 @@ use Drupal\taxonomy\Entity\Vocabulary;
         ],
     ];
 
+    $schema['geslib_queues'] = [
+        'description' => 'Geslib Queues is the table of the queue management',
+        'fields' => [
+            'id' =>[
+                'description' => 'The primary identifier for a line',
+                'type' => 'serial',
+                'size' => 'small',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ],
+            'log_id' => [
+                'description' => 'The log.id that correspond to the processed file.',
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ],
+            'geslib_id' => [
+                'description' => "The internal ID provided by Geslib.",
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ],
+            'action' => [
+                'description' => "The Action related to the geslib_id.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'entity' => [
+                'description' => "The type of entity that will be created, deleted or modified by geslib.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'type' => [
+                'description' => "The type of entity that will be created, deleted or modified by geslib.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+            'data' => [
+                'description' => "String that contains all the information related to the given geslib_id.",
+                'type' => 'text',
+                'not null' => TRUE,
+            ],
+        ],
+        'primary key' => ['id'],
+        'foreign keys' => [
+            'log_id' => [
+              'table' => 'geslib_log',
+              'columns' => ['log_id' => 'id'],
+            ],
+        ],
+    ];
+
     return $schema;
  }
 
@@ -132,7 +184,7 @@ use Drupal\taxonomy\Entity\Vocabulary;
  */
 function geslib_install() {
     $directory = 'public://geslib';
-    
+
     // Create the directory and ensure it's writable.
     \Drupal::service('file_system')->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
     // Create a vocabulary.
@@ -171,17 +223,16 @@ function geslib_install() {
         }
     }
 }
-  
+
   /**
    * Implements hook_uninstall().
    */
   function geslib_uninstall() {
-    $directory = 'public://geslib';
-    
+    //$directory = 'public://geslib';
+
     // Remove the directory when the module is uninstalled.
-    \Drupal::service('file_system')->deleteRecursive($directory);
-    
-    \Drupal::database()->schema()->dropTable('geslib_log');
-    \Drupal::database()->schema()->dropTable('geslib_lines');
+    //\Drupal::service('file_system')->deleteRecursive($directory);
+
+    //\Drupal::database()->schema()->dropTable('geslib_log');
+    //\Drupal::database()->schema()->dropTable('geslib_lines');
   }
-  

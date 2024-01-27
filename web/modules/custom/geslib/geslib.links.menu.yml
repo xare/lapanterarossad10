@@ -16,3 +16,15 @@ geslib.admin.lines:
   route_name: geslib.admin.lines
   description: See geslib_lines table
   weight: 100
+geslib.admin.files:
+  title: 'Geslib Files'
+  parent: geslib.admin
+  route_name: geslib.admin.files
+  description: See files in geslib folder
+  weight: 100
+geslib.admin.queues:
+  title: 'Geslib Queues'
+  parent: geslib.admin
+  route_name: geslib.admin.queues
+  description: See Geslib Queues
+  weight: 100
